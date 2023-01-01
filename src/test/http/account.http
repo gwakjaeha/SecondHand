@@ -1,0 +1,30 @@
+
+### create account
+POST http://localhost:8080/account
+Content-Type: application/json
+
+{
+  "areaId": 200,
+  "email": "kjh19920718@gmail.com",
+  "password": "123456",
+  "userName": "재하",
+  "phone": "010-1111-2222"
+}
+
+### login
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+  "email": "kjh19920718@gmail.com",
+  "password": "123456"
+}
+
+### delete account
+DELETE http://localhost:8080/account
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "accountNumber": "5961924410"
+}
