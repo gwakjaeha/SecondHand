@@ -29,6 +29,7 @@ public class Account implements AccountStatusCode {
 	String userName;
 	String phone;
 	String status;
+	String emailAuthKey;
 	boolean adminYn;
 
 	LocalDateTime createDt;

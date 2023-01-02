@@ -1,6 +1,6 @@
 
 ### create account
-POST http://localhost:8080/account
+POST http://localhost:8080/auth/register
 Content-Type: application/json
 
 {
@@ -12,7 +12,7 @@ Content-Type: application/json
 }
 
 ### login
-POST http://localhost:8080/login
+POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
@@ -20,11 +20,10 @@ Content-Type: application/json
   "password": "123456"
 }
 
-### delete account
-DELETE http://localhost:8080/account
+### send email
+POST http://localhost:8080/auth/send-email
 Content-Type: application/json
 
 {
-  "userId": 2,
-  "accountNumber": "5961924410"
+  "email": "kjh19920718@gmail.com"
 }

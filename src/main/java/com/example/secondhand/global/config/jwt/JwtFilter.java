@@ -25,6 +25,7 @@ public class JwtFilter extends GenericFilterBean {
         this.redisDao = redisDao;
     }
 
+    //토큰의 인증정보를 SecurityContext에 저장하는 역할 수행
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
@@ -49,6 +50,7 @@ public class JwtFilter extends GenericFilterBean {
         filterChain.doFilter(servletRequest, servletResponse);
     }
 
+    //Request Header에서 토큰 정보를 꺼내옴.
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(Model.AUTHORIZATION_HEADER);
 

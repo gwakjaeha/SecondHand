@@ -11,7 +11,8 @@ public enum CustomErrorCode {
     JWT_CREDENTIALS_STATUS_FALSE("로그인이 유효하지 않습니다."),
     JWT_TIMEOUT( "만료된 JWT 토큰입니다."),
     LOGIN_FALSE("아이디 또는 비밀번호를 잘못 입력하였습니다."),
-    REFRESH_TOKEN_IS_BAD_REQUEST("잘못된 RefreshToken 입니다"),
+    REFRESH_TOKEN_IS_BAD_REQUEST("잘못된 RefreshToken 입니다."),
+    REQ_EMAIL("비활성화된 계정입니다. 이메일 인증을 완료해주세요."),
     STOP_EMAIL("정지된 계정입니다."),
     WITHDRAW_EMAIL("탈퇴된 계정입니다."),
 
@@ -21,6 +22,8 @@ public enum CustomErrorCode {
     NOT_EMAIL_FORM("이메일 형식이 아닙니다."),
     NOT_CONTAINS_EXCLAMATIONMARK("비밀번호에 특수문자가 포함되어있지 않습니다."),
     DUPLICATE_USER("해당 이메일의 가입자가 이미 존재합니다."),
+    SEND_EMAIL_FAIL("이메일 전송에 실패했습니다."),
+    NOT_EXIST_UUID("유효하지 않은 접근입니다. 이메일 인증을 다시해주세요."),
 
     // 업데이트
     UPDATE_INFO_NULL("필수 항목을 입력하지 않았습니다."),
