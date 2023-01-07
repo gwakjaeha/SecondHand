@@ -5,7 +5,7 @@ Content-Type: application/json
 
 {
   "areaId": 200,
-  "email": "kjh19920718@gmail.com",
+  "email": "gwakjaeha@naver.com",
   "password": "123456",
   "userName": "재하",
   "phone": "010-1111-2222"
@@ -17,13 +17,69 @@ Content-Type: application/json
 
 {
   "email": "kjh19920718@gmail.com",
-  "password": "123456"
+  "password": "1234567890"
 }
 
-### send email
-POST http://localhost:8080/auth/send-email
+### read account info
+GET http://localhost:8080/auth/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc0MjYyMzUxfQ.nTBOMCeoej43zFUZ9j_5wpfJbpXma3Ky9mAcC_GjjSxaiWDmrpVli0CuK2y6VTZj9HhBO5TeSki8_FqeFJWJwQ
+
+### change account info
+PATCH http://localhost:8080/auth/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc0MjMxNDgzfQ.fG1x_CI5XJo3f8yywrmtMkNJsFzMxVdv1_TT2PTAWgRoyHX_kMCyp_nVSwtFWKhe05phnkFzPEIehVqYLBQ4hQ
+
+{
+  "areaId": 300,
+  "userName": "jaeha123",
+  "phone": "010-9999-1111"
+}
+
+### change passsword
+PATCH http://localhost:8080/auth/password
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc0MjE4NzYzfQ.ma8TYuoOFOM5h_M7a40GjowSih3oTCMlY_YthOjLoQtjPaX29Lf60EvKJ4F0nYI7_2CX8KgzNOaNL91GXtuHKA
+
+{
+  "email": "kjh19920718@gmail.com",
+  "password": "1234567890",
+  "newPassword": "123456789"
+}
+
+### change lost passsword
+PUT http://localhost:8080/auth/password
 Content-Type: application/json
 
 {
-  "email": "kjh19920718@gmail.com"
+  "email": "kjh19920718@gmail.com",
+  "newPassword": "1234567890"
 }
+
+### logout
+DELETE http://localhost:8080/auth/logout
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc0MjMyNTEzfQ.vm4Rqr-vK1uZxUpeV8kgLjug-bM2NT3h1ZfNKq-j7OcBKRfzjVi-gh0mJOa27tB9tFu9OsynXdSWagcNrDUAvw
+
+{
+  "accessToken": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc0MjMyNTEzfQ.vm4Rqr-vK1uZxUpeV8kgLjug-bM2NT3h1ZfNKq-j7OcBKRfzjVi-gh0mJOa27tB9tFu9OsynXdSWagcNrDUAvw"
+}
+
+### delete account
+DELETE http://localhost:8080/auth/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc0MjE4NzYzfQ.ma8TYuoOFOM5h_M7a40GjowSih3oTCMlY_YthOjLoQtjPaX29Lf60EvKJ4F0nYI7_2CX8KgzNOaNL91GXtuHKA
+
+{
+  "password": "12345678"
+}
+
+### reissue refreshtoken
+GET http://localhost:8080/auth
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJleHAiOjE2NzU2MTQ5MTN9.4PR7zaQ921qvagFg8NXETbPTW-ELUY6r5TPUQwyEX-s28Ptg6GP0_r2_vjfdLjM4PFeTiHGWobnGssb7BjqLiA"
+}
+
+

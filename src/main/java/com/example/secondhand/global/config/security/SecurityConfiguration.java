@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,11 +53,11 @@ public class SecurityConfiguration{
 
             .and()
             .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS) //세션을 사용하지 않음.
 
             .and()
             .authorizeRequests()
-            .antMatchers("/auth", "/auth/register", "/auth/login", "/auth/send-email", "/auth/auth-email").permitAll()
+            .antMatchers("/auth", "/auth/register", "/auth/login", "/auth/auth-email", "/auth/password").permitAll()
             .anyRequest().authenticated()
 
             .and()

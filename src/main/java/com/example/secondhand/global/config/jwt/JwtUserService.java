@@ -33,22 +33,10 @@ public class JwtUserService implements UserDetailsService {
 
         Account account = optionalAccount.get();
 
-        if(account.ACCOUNT_STATUS_REQ.equals(account.getStatus())){
-            throw new CustomException(CustomErrorCode.REQ_EMAIL);
-        }
-
-        if(account.ACCOUNT_STATUS_STOP.equals(account.getStatus())){
-            throw new CustomException(CustomErrorCode.STOP_EMAIL);
-        }
-
-        if(account.ACCOUNT_STATUS_WITHDRAW.equals(account.getStatus())){
-            throw new CustomException(CustomErrorCode.WITHDRAW_EMAIL);
-        }
-
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-        if(account.isAdminYn()){
+        if(account.isAdmin()){
             grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 

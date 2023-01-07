@@ -32,7 +32,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         error.setStatus(JWT_TIMEOUT);
         error.setStatusMessage("만료된 JWT 토큰입니다.");
 
-        // {"username":"loop-study", "age":20}
         String result = objectMapper.writeValueAsString(error);
         response.getWriter().write(result);
     }

@@ -1,4 +1,4 @@
-package com.example.secondhand.domain.user.type;
+package com.example.secondhand.domain.user.status;
 
 public interface AccountStatusCode {
 	//이메일 인증 요청중인 상태

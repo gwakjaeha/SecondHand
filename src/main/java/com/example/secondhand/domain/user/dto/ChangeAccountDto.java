@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-public class CreateAccount {
+public class ChangeAccountDto {
 
 	@Getter
 	@Setter
@@ -13,12 +13,6 @@ public class CreateAccount {
 	public static class Request {
 		@NotNull
 		private Long areaId;
-
-		@NotNull
-		private String email;
-
-		@NotNull
-		private String password;
 
 		@NotNull
 		private String userName;

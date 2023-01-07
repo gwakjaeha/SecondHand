@@ -1,6 +1,6 @@
 package com.example.secondhand.global.config.jwt;
 
-import com.example.secondhand.domain.user.model.Model;
+import com.example.secondhand.domain.user.status.AuthHeader;
 import com.example.secondhand.global.config.redis.RedisDao;
 import java.io.IOException;
 import javax.servlet.FilterChain;
@@ -39,7 +39,7 @@ public class JwtFilter extends GenericFilterBean {
         String requestURI = httpServletRequest.getRequestURI();
 
         if (jwt != null && tokenProvider.validateToken(jwt)) {
-            if (redisDao.getValues(jwt) == null) {
+            if (redisDao.getValues("accessToken:" + jwt) == null) {
                 Authentication authentication = tokenProvider.getAuthentication(jwt);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.info("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
@@ -52,7 +52,7 @@ public class JwtFilter extends GenericFilterBean {
 
     //Request Header에서 토큰 정보를 꺼내옴.
     private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(Model.AUTHORIZATION_HEADER);
+        String bearerToken = request.getHeader(AuthHeader.AUTHORIZATION_HEADER);
 
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);

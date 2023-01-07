@@ -1,8 +1,10 @@
 package com.example.secondhand.domain.user.components;
 
+import static com.example.secondhand.global.exception.CustomErrorCode.SEND_EMAIL_FAIL;
+
+import com.example.secondhand.global.exception.CustomException;
 import javax.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
@@ -13,10 +15,7 @@ import org.springframework.stereotype.Component;
 public class MailComponents {
 	private final JavaMailSender javaMailSender;
 
-	public boolean sendMail(String mail, String subject, String text){
-
-		boolean result = false;
-
+	public void sendMail(String mail, String subject, String text){
 		MimeMessagePreparator msg = new MimeMessagePreparator() {
 			@Override
 			public void prepare(MimeMessage mimeMessage) throws Exception {
@@ -28,10 +27,8 @@ public class MailComponents {
 		};
 		try{
 			javaMailSender.send(msg);
-			result = true;
 		} catch (Exception e){
-			System.out.println(e.getMessage());
+			throw new CustomException(SEND_EMAIL_FAIL);
 		}
-		return result;
 	}
 }
