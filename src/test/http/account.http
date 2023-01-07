@@ -23,7 +23,7 @@ Content-Type: application/json
 ### read account info
 GET http://localhost:8080/auth/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc0MjYyMzUxfQ.nTBOMCeoej43zFUZ9j_5wpfJbpXma3Ky9mAcC_GjjSxaiWDmrpVli0CuK2y6VTZj9HhBO5TeSki8_FqeFJWJwQ
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjczMzMxMzMxfQ._Fd6DBWgGC3bSyH7A1ZSyq8e25RlgoUodSpZm0M8H-lShEGq4yfFGRjsS8YyfMRFR7qOW4XQGdW-1V1cfv_2Hg
 
 ### change account info
 PATCH http://localhost:8080/auth/

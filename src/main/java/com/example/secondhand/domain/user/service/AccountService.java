@@ -294,6 +294,7 @@ public class AccountService {
 
 		//loadUserByUsername() 를 통해 권한 정보도 포함시킴.
 		Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+		//헤더의 인증정보를 스레드 내 저장소에 담아놓고 해당 스레드에서 필요 시 꺼내서 사용하기 위함.
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String atk = tokenProvider.createToken(authentication);
 		String rtk = tokenProvider.createRefreshToken(request.getEmail());
