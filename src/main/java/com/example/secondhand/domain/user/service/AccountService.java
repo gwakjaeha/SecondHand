@@ -1,24 +1,13 @@
 package com.example.secondhand.domain.user.service;
 
-import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_ING;
-import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_REQ;
-import static com.example.secondhand.global.exception.CustomErrorCode.DELETE_ACCOUNT_FALSE;
-import static com.example.secondhand.global.exception.CustomErrorCode.DUPLICATE_ACCOUNT;
-import static com.example.secondhand.global.exception.CustomErrorCode.LOGIN_FALSE;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EMAIL_FORM;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_UUID;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_FOUND_USER;
-import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_CHANGE_FALSE;
-import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_IS_NOT_CHANGE;
-import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_SIZE_ERROR;
-import static com.example.secondhand.global.exception.CustomErrorCode.REFRESH_TOKEN_IS_BAD_REQUEST;
-import static com.example.secondhand.global.exception.CustomErrorCode.REGISTER_INFO_NULL;
+import static com.example.secondhand.domain.user.status.AccountStatusCode.*;
+import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.Account;
 import com.example.secondhand.domain.user.dto.ChangeAccountDto;
 import com.example.secondhand.domain.user.dto.ChangePasswordDto;
-import com.example.secondhand.domain.user.dto.ChangePasswordDto.lostRequest;
+import com.example.secondhand.domain.user.dto.ChangePasswordDto.LostRequest;
 import com.example.secondhand.domain.user.dto.CreateAccountDto;
 import com.example.secondhand.domain.user.dto.CreateAccountDto.Request;
 import com.example.secondhand.domain.user.dto.DeleteAccountDto;
@@ -40,6 +29,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -58,6 +48,15 @@ public class AccountService {
 	private final RedisDao redisDao;
 	private final TokenProvider tokenProvider;
 	private final MailComponents mailComponents;
+
+	@Value("${serviceUrl}")
+	private String SERVICE_URL;
+
+	@Value("${accessTokenPrefix}")
+	private String ACCESS_TOKEN_PREFIX;
+
+	@Value("${refreshTokenPrefix}")
+	private String REFRESH_TOKEN_PREFIX;
 
 	@Transactional
 	public void createAccount(CreateAccountDto.Request request) {
@@ -90,7 +89,7 @@ public class AccountService {
 
 		String subject = "중고물품 거래 서비스 사이트 가입을 축하드립니다.";
 		String text = "<p>중고물품 거래 서비스 사이트 가입을 축하드립니다. </p><p>아래 링크를 클릭하셔서 가입을 완료하세요.</p>"
-			+ "<div><a target='_blank' href='http://localhost:8080/auth/auth-email?id=" + uuid + "'> 가입 완료 </a></div>";
+			+ "<div><a target='_blank' href='" + SERVICE_URL + "/auth/auth-email?id=" + uuid + "'> 가입 완료 </a></div>";
 
 		mailComponents.sendMail(email,subject,text);
 	}
@@ -130,8 +129,8 @@ public class AccountService {
 				.status(tokenInfo.getStatus())
 				.emailAuthKey(tokenInfo.getEmailAuthKey())
 				.admin(tokenInfo.isAdmin())
-				.createDt(tokenInfo.getCreateDt())
-				.updateDt(LocalDateTime.now())
+				.createdDt(tokenInfo.getCreateDt())
+				.updatedDt(LocalDateTime.now())
 				.build()
 		);
 	}
@@ -151,14 +150,14 @@ public class AccountService {
 				.status(tokenInfo.getStatus())
 				.emailAuthKey(tokenInfo.getEmailAuthKey())
 				.admin(tokenInfo.isAdmin())
-				.createDt(tokenInfo.getCreateDt())
-				.updateDt(LocalDateTime.now())
+				.createdDt(tokenInfo.getCreateDt())
+				.updatedDt(LocalDateTime.now())
 				.build()
 		);
 	}
 
 	@Transactional
-	public void changeLostPassword(ChangePasswordDto.lostRequest request) {
+	public void changeLostPassword(ChangePasswordDto.LostRequest request) {
 		TokenInfoResponseDto accountInfo = getAccountInfo(request.getEmail());
 		changeLostPasswordValidation(request, accountInfo.getPassword());
 		accountRepository.save(
@@ -172,8 +171,8 @@ public class AccountService {
 				.status(accountInfo.getStatus())
 				.emailAuthKey(accountInfo.getEmailAuthKey())
 				.admin(accountInfo.isAdmin())
-				.createDt(accountInfo.getCreateDt())
-				.updateDt(LocalDateTime.now())
+				.createdDt(accountInfo.getCreateDt())
+				.updatedDt(LocalDateTime.now())
 				.build()
 		);
 	}
@@ -199,8 +198,8 @@ public class AccountService {
 				.status(tokenInfo.getStatus())
 				.emailAuthKey(tokenInfo.getEmailAuthKey())
 				.admin(tokenInfo.isAdmin())
-				.createDt(tokenInfo.getCreateDt())
-				.updateDt(tokenInfo.getUpdateDt())
+				.createdDt(tokenInfo.getCreateDt())
+				.updatedDt(tokenInfo.getUpdateDt())
 				.deleteDt(LocalDateTime.now())
 				.build()
 		);
@@ -208,7 +207,7 @@ public class AccountService {
 
 	public TokenDto.Response reissue(TokenDto.Request request) {
 		String email = tokenProvider.getRefreshTokenInfo(request.getRefreshToken());
-		String rtkInRedis = redisDao.getValues("refreshToken:" + email);
+		String rtkInRedis = redisDao.getValues(REFRESH_TOKEN_PREFIX + email);
 		if (Objects.isNull(rtkInRedis) || !rtkInRedis.equals(request.getRefreshToken()))
 			throw new CustomException(REFRESH_TOKEN_IS_BAD_REQUEST);
 
@@ -266,7 +265,7 @@ public class AccountService {
 		}
 	}
 
-	private void changeLostPasswordValidation(lostRequest request, String password) {
+	private void changeLostPasswordValidation(LostRequest request, String password) {
 		accountRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 		if (passwordEncoder.matches(request.getNewPassword(), password)) {
@@ -299,7 +298,7 @@ public class AccountService {
 		String atk = tokenProvider.createToken(authentication);
 		String rtk = tokenProvider.createRefreshToken(request.getEmail());
 
-		redisDao.setValues("refreshToken:" + request.getEmail(), rtk, Duration.ofDays(14));
+		redisDao.setValues(REFRESH_TOKEN_PREFIX + request.getEmail(), rtk, Duration.ofDays(14));
 
 		return TokenDto.Response.builder()
 			.grantType("Bearer")
@@ -328,12 +327,12 @@ public class AccountService {
 			.getAuthentication()
 			.getName();
 
-		if(redisDao.getValues("accessToken:" + email) != null){
-			redisDao.deleteValues("accessToken:" + email);
+		if(redisDao.getValues(ACCESS_TOKEN_PREFIX + email) != null){
+			redisDao.deleteValues(ACCESS_TOKEN_PREFIX + email);
 		}
 
 		//추후 서비스 사용시, JwtFilter 에서 해당 Access Token 은 유효하지 않은 것으로 처리하기 위해 필요.
-		redisDao.setValues("accessToken:" + atk, "logout", Duration.ofMillis(
+		redisDao.setValues(ACCESS_TOKEN_PREFIX + atk, "logout", Duration.ofMillis(
 			tokenProvider.getExpiration(atk)
 		));
 	}

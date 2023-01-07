@@ -87,7 +87,7 @@ public class AccountController {
 
 	//비밀번호 변경 (로그인 안한 상태, 비밀번호 분실 경우)
 	@PutMapping("/password")
-	public ApiResponse<String> changeLostPassword(@RequestBody @Valid ChangePasswordDto.lostRequest request){
+	public ApiResponse<String> changeLostPassword(@RequestBody @Valid ChangePasswordDto.LostRequest request){
 		accountService.changeLostPassword(request);
 		return ApiResponse.success(PASSWORD_CHANGE_TRUE);
 	}
