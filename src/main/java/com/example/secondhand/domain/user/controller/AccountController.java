@@ -38,18 +38,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccountController {
 	private final AccountService accountService;
 
-	//이메일 인증
-	@GetMapping("/auth-email")
-	public ApiResponse<String> authEmail(HttpServletRequest request) {
-		accountService.authEmail(request.getParameter("id"));
-		return ApiResponse.success(CERTIFICATION_EMAIL_TRUE);
-	}
-
 	//회원가입
 	@PostMapping("/register")
 	public ApiResponse<String> createAccount(@RequestBody @Valid CreateAccountDto.Request request) {
 		accountService.createAccount(request);
 		return ApiResponse.success(REGISTER_TRUE);
+	}
+
+	//이메일 인증
+	@GetMapping("/auth-email")
+	public ApiResponse<String> authEmail(HttpServletRequest request) {
+		accountService.authEmail(request.getParameter("id"));
+		return ApiResponse.success(CERTIFICATION_EMAIL_TRUE);
 	}
 
 	//로그인

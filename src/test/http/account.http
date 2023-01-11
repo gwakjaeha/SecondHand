@@ -11,6 +11,10 @@ Content-Type: application/json
   "phone": "010-1112-2222"
 }
 
+### email-auth
+GET http://localhost:8080/auth/auth-email?id=emailAuthKey
+Content-Type: application/json
+
 ### login
 POST http://localhost:8080/auth/login
 Content-Type: application/json

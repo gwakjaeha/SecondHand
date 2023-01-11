@@ -1,7 +1,19 @@
 package com.example.secondhand.domain.user.service;
 
-import static com.example.secondhand.domain.user.status.AccountStatusCode.*;
-import static com.example.secondhand.global.exception.CustomErrorCode.*;
+import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_ING;
+import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_REQ;
+import static com.example.secondhand.global.exception.CustomErrorCode.DELETE_ACCOUNT_FALSE;
+import static com.example.secondhand.global.exception.CustomErrorCode.DUPLICATE_ACCOUNT;
+import static com.example.secondhand.global.exception.CustomErrorCode.LOGIN_FALSE_NOT_CORRECT_PASSWORD;
+import static com.example.secondhand.global.exception.CustomErrorCode.LOGIN_FALSE_NOT_EXIST_EMAIL;
+import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EMAIL_FORM;
+import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_UUID;
+import static com.example.secondhand.global.exception.CustomErrorCode.NOT_FOUND_USER;
+import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_CHANGE_FALSE;
+import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_IS_NOT_CHANGE;
+import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_SIZE_ERROR;
+import static com.example.secondhand.global.exception.CustomErrorCode.REFRESH_TOKEN_IS_BAD_REQUEST;
+import static com.example.secondhand.global.exception.CustomErrorCode.REGISTER_INFO_NULL;
 
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.Account;
@@ -9,7 +21,6 @@ import com.example.secondhand.domain.user.dto.ChangeAccountDto;
 import com.example.secondhand.domain.user.dto.ChangePasswordDto;
 import com.example.secondhand.domain.user.dto.ChangePasswordDto.LostRequest;
 import com.example.secondhand.domain.user.dto.CreateAccountDto;
-import com.example.secondhand.domain.user.dto.CreateAccountDto.Request;
 import com.example.secondhand.domain.user.dto.DeleteAccountDto;
 import com.example.secondhand.domain.user.dto.LoginAccountDto;
 import com.example.secondhand.domain.user.dto.LogoutAccountDto;
@@ -61,37 +72,12 @@ public class AccountService {
 	@Transactional
 	public void createAccount(CreateAccountDto.Request request) {
 		createAccountValidation(request);
-		accountRepository.save(Account.builder()
-			.areaId(request.getAreaId())
-			.email(request.getEmail())
-			.password(passwordEncoder.encode(request.getPassword()))
-			.userName(request.getUserName())
-			.phone(request.getPhone())
-			.admin(false)
-			.status(ACCOUNT_STATUS_REQ)
-			.build());
-
-		sendEmail(request.getEmail());
+		sendEmailAndSaveAccount(request);
 	}
 
 	public TokenDto.Response loginAccount(LoginAccountDto.Request request) {
 		loginAccountValidation(request);
 		return getAccessAndRefreshToken(request);
-	}
-
-	@Transactional
-	public void sendEmail(String email) {
-		String uuid = UUID.randomUUID().toString();
-		Optional<Account> optionalAccount = accountRepository.findByEmail(email);
-		Account account = optionalAccount.get();
-		account.setEmailAuthKey(uuid);
-		accountRepository.save(account);
-
-		String subject = "중고물품 거래 서비스 사이트 가입을 축하드립니다.";
-		String text = "<p>중고물품 거래 서비스 사이트 가입을 축하드립니다. </p><p>아래 링크를 클릭하셔서 가입을 완료하세요.</p>"
-			+ "<div><a target='_blank' href='" + SERVICE_URL + "/auth/auth-email?id=" + uuid + "'> 가입 완료 </a></div>";
-
-		mailComponents.sendMail(email,subject,text);
 	}
 
 	@Transactional
@@ -218,7 +204,30 @@ public class AccountService {
 			.build();
 	}
 
-	private void createAccountValidation(Request request){
+	@Transactional
+	public void sendEmailAndSaveAccount(CreateAccountDto.Request request) {
+
+		String uuid = UUID.randomUUID().toString();
+
+		Account savedAccount = accountRepository.save(Account.builder()
+			.areaId(request.getAreaId())
+			.email(request.getEmail())
+			.password(passwordEncoder.encode(request.getPassword()))
+			.userName(request.getUserName())
+			.phone(request.getPhone())
+			.admin(false)
+			.status(ACCOUNT_STATUS_REQ)
+			.emailAuthKey(uuid)
+			.build());
+
+		String subject = "중고물품 거래 서비스 사이트 가입을 축하드립니다.";
+		String text = "<p>중고물품 거래 서비스 사이트 가입을 축하드립니다. </p><p>아래 링크를 클릭하셔서 가입을 완료하세요.</p>"
+			+ "<div><a target='_blank' href='" + SERVICE_URL + "/auth/auth-email?id=" + uuid + "'> 가입 완료 </a></div>";
+
+		mailComponents.sendMail(savedAccount.getEmail(), subject, text);
+	}
+
+	private void createAccountValidation(CreateAccountDto.Request request){
 
 		if (request.getAreaId() == null || request.getEmail() == null || request.getPassword() == null
 			|| request.getUserName() == null || request.getPhone() == null)
@@ -240,10 +249,10 @@ public class AccountService {
 			throw new CustomException(NOT_EMAIL_FORM);
 
 		Account account = accountRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new CustomException(LOGIN_FALSE));
+			.orElseThrow(() -> new CustomException(LOGIN_FALSE_NOT_EXIST_EMAIL));
 
 		if (!passwordEncoder.matches(request.getPassword(), account.getPassword())) {
-			throw new CustomException(LOGIN_FALSE);
+			throw new CustomException(LOGIN_FALSE_NOT_CORRECT_PASSWORD);
 		}
 
 		if(account.ACCOUNT_STATUS_REQ.equals(account.getStatus())){
@@ -287,7 +296,7 @@ public class AccountService {
 		}
 	}
 
-	public TokenDto.Response getAccessAndRefreshToken(LoginAccountDto.Request request){
+	private TokenDto.Response getAccessAndRefreshToken(LoginAccountDto.Request request){
 		UsernamePasswordAuthenticationToken authenticationToken =
 			new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
 

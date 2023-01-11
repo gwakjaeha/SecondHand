@@ -10,7 +10,8 @@ public enum CustomErrorCode {
     //로그인 & 로그아웃 검증
     JWT_CREDENTIALS_FALSE("로그인이 유효하지 않습니다."),
     JWT_TIMEOUT( "만료된 JWT 토큰입니다."),
-    LOGIN_FALSE("아이디 또는 비밀번호를 잘못 입력하였습니다."),
+    LOGIN_FALSE_NOT_EXIST_EMAIL("아이디 또는 비밀번호를 잘못 입력하였습니다."),
+    LOGIN_FALSE_NOT_CORRECT_PASSWORD("아이디 또는 비밀번호를 잘못 입력하였습니다."),
     REFRESH_TOKEN_IS_BAD_REQUEST("잘못된 RefreshToken 입니다."),
     REQ_EMAIL("비활성화된 계정입니다. 이메일 인증을 완료해주세요."),
     STOP_EMAIL("정지된 계정입니다."),
