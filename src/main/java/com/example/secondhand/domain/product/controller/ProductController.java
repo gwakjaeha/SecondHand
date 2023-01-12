@@ -1,0 +1,53 @@
+package com.example.secondhand.domain.product.controller;
+
+import static com.example.secondhand.domain.user.status.StatusTrue.*;
+
+import com.example.secondhand.domain.product.dto.AddProductDto;
+import com.example.secondhand.domain.product.dto.DeleteProductDto;
+import com.example.secondhand.domain.product.dto.ReadProductListDto;
+import com.example.secondhand.domain.product.dto.ReadProductListDto.Response;
+import com.example.secondhand.domain.product.dto.UpdateProductDto;
+import com.example.secondhand.domain.product.service.ProductService;
+import com.example.secondhand.global.dto.ApiResponse;
+import java.util.List;
+import javax.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/main")
+public class ProductController {
+
+	private final ProductService productService;
+
+	@GetMapping("/product")
+	public ApiResponse<List<ReadProductListDto.Response>> readProduct(
+		@Valid @RequestBody ReadProductListDto.Request request){
+			List<ReadProductListDto.Response> response = productService.readProductList(request);
+			return ApiResponse.success(READ_PRODUCT_INFO_TRUE,response);
+	}
+
+	@PostMapping(value = "/product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+	public ApiResponse<String> addProduct(
+		@Valid @RequestPart AddProductDto.Request request, @RequestPart MultipartFile imgFile){
+		productService.addProduct(request, imgFile);
+		return ApiResponse.success(ADD_PRODUCT_INFO_TRUE);
+	}
+
+	@PutMapping(value = "/product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+	public ApiResponse<String> updateProduct(
+		@Valid @RequestPart UpdateProductDto.Request request, @RequestPart MultipartFile imgFile){
+		productService.updateProduct(request, imgFile);
+		return ApiResponse.success(UPDATE_PRODUCT_INFO_TRUE);
+	}
+
+	@DeleteMapping(value = "/product")
+	public ApiResponse<String> deleteProduct(
+		@Valid @RequestPart DeleteProductDto.Request request){
+		productService.deleteProduct(request);
+		return ApiResponse.success(DELETE_PRODUCT_INFO_TRUE);
+	}
+}

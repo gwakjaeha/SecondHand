@@ -315,7 +315,7 @@ public class AccountService {
 			.refreshToken(rtk).build();
 	}
 
-	private TokenInfoResponseDto getTokenInfo() {
+	public TokenInfoResponseDto getTokenInfo() {
 		return TokenInfoResponseDto.Response(
 			Objects.requireNonNull(SecurityUtil.getCurrentUsername()
 				.flatMap(accountRepository::findOneByEmail)

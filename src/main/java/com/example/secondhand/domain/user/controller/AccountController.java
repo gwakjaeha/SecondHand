@@ -1,36 +1,14 @@
 package com.example.secondhand.domain.user.controller;
 
-import static com.example.secondhand.domain.user.status.StatusTrue.CERTIFICATION_EMAIL_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.CHANGE_INFO_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.DELETE_ACCOUNT_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.LOGIN_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.LOGOUT_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.PASSWORD_CHANGE_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.READ_INFO_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.REGISTER_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.TOKEN_REISSUE_TRUE;
+import static com.example.secondhand.domain.user.status.StatusTrue.*;
 
-import com.example.secondhand.domain.user.dto.ChangeAccountDto;
-import com.example.secondhand.domain.user.dto.ChangePasswordDto;
-import com.example.secondhand.domain.user.dto.CreateAccountDto;
-import com.example.secondhand.domain.user.dto.DeleteAccountDto;
-import com.example.secondhand.domain.user.dto.LoginAccountDto;
-import com.example.secondhand.domain.user.dto.LogoutAccountDto;
-import com.example.secondhand.domain.user.dto.ReadAccountDto;
-import com.example.secondhand.domain.user.dto.TokenDto;
+import com.example.secondhand.domain.user.dto.*;
 import com.example.secondhand.domain.user.service.AccountService;
 import com.example.secondhand.global.dto.ApiResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -61,14 +39,14 @@ public class AccountController {
 	//내 정보 조회
 	@GetMapping("/")
 	public ApiResponse<ReadAccountDto> readAccountInfo() {
-		return ApiResponse.success(READ_INFO_TRUE, accountService.readAccountInfo());
+		return ApiResponse.success(READ_ACCOUNT_INFO_TRUE, accountService.readAccountInfo());
 	}
 
 	//내 정보 수정
 	@PatchMapping("/")
 	public ApiResponse<String> changeAccountInfo(@RequestBody @Valid final ChangeAccountDto.Request request){
 		accountService.changeAccountInfo(request);
-		return ApiResponse.success(CHANGE_INFO_TRUE);
+		return ApiResponse.success(CHANGE_ACCOUNT_INFO_TRUE);
 	}
 
 	//로그아웃

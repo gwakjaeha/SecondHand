@@ -25,18 +25,26 @@ public enum CustomErrorCode {
     SEND_EMAIL_FAIL("이메일 전송에 실패했습니다."),
     NOT_EXIST_UUID("유효하지 않은 접근입니다. 이메일 인증을 다시해주세요."),
 
-    // 업데이트
+    //정보변경
     UPDATE_INFO_NULL("필수 항목을 입력하지 않았습니다."),
-
-    // 비밀번호 변경
     PASSWORD_IS_NOT_CHANGE("현재 사용중인 비밀번호로는 변경이 불가합니다."),
     PASSWORD_CHANGE_FALSE( "현재 비밀번호가 일치하지 않습니다." ),
     NOT_FOUND_USER("해당 이메일의 유저가 존재하지 않습니다"),
 
-    // 회원탈퇴
+    //회원탈퇴
     DELETE_ACCOUNT_FALSE("비밀번호 불일치로 회원탈퇴를 할 수 없습니다."),
 
-    // 알수 없는 오류의 처리
+    //물품
+    READ_PRODUCT_INFO_NULL("필수 항목을 입력하지 않았습니다."),
+    NOT_EXIST_PRODUCT("해당하는 물품이 없습니다."),
+    ADD_PRODUCT_INFO_NULL("필수 항목을 입력하지 않았습니다."),
+    UPDATE_PRODUCT_INFO_NULL("필수 항목을 입력하지 않았습니다."),
+    DELETE_PRODUCT_INFO_NULL("물품 정보가 확인되지 않습니다."),
+
+    //이미지 파일 저장
+    SAVE_IMAGE_FILE_FALSE("이미지 파일 저장에 실패하였습니다."),
+
+    //알수 없는 오류의 처리
     INTERNAL_SERVER_ERROR("서버에 오류가 발생했습니다."),
     INVALID_REQUEST("잘못된 요청입니다.");
 
