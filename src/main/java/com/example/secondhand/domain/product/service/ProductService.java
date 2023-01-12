@@ -1,11 +1,6 @@
 package com.example.secondhand.domain.product.service;
 
-import static com.example.secondhand.global.exception.CustomErrorCode.ADD_PRODUCT_INFO_NULL;
-import static com.example.secondhand.global.exception.CustomErrorCode.DELETE_PRODUCT_INFO_NULL;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_PRODUCT;
-import static com.example.secondhand.global.exception.CustomErrorCode.READ_PRODUCT_INFO_NULL;
-import static com.example.secondhand.global.exception.CustomErrorCode.SAVE_IMAGE_FILE_FALSE;
-import static com.example.secondhand.global.exception.CustomErrorCode.UPDATE_PRODUCT_INFO_NULL;
+import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
 import com.example.secondhand.domain.product.domain.Product;
 import com.example.secondhand.domain.product.dto.AddProductDto.Request;
@@ -20,7 +15,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +38,7 @@ public class ProductService {
 
 	public List<ReadProductListDto.Response> readProductList(ReadProductListDto.Request request) {
 		readProductValidation(request);
-		List<Product> productList = productRepository.findByAreaIdAndCategoryIdAndDeleteDt(request.getAreaId(), request.getCategoryId(), true);
+		List<Product> productList = productRepository.findByAreaIdAndCategoryIdAndDeleteDtIsNull(request.getAreaId(), request.getCategoryId());
 		productListValidation(productList);
 
 		return productList.stream().map(ReadProductListDto.Response::response).toList();
@@ -67,13 +64,13 @@ public class ProductService {
 
 	public void updateProduct(UpdateProductDto.Request request, MultipartFile imgFile) {
 		updateProductValidation(request);
-		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		Product product = productRepository.findById(request.getProductId()).get();
 		String imgFilePath = getSavedImageFilePath(imgFile);
 		productRepository.save(
 			Product.builder()
 				.productId(request.getProductId())
-				.userId(tokenInfo.getUserId())
-				.areaId(tokenInfo.getAreaId())
+				.userId(product.getUserId())
+				.areaId(product.getAreaId())
 				.categoryId(request.getCategoryId())
 				.title(request.getTitle())
 				.content(request.getContent())
@@ -81,6 +78,7 @@ public class ProductService {
 				.price(request.getPrice())
 				.transactionPlace(request.getTransactionPlace())
 				.transactionStatus(request.isTransactionStatus())
+				.createdDt(product.getCreatedDt())
 				.build());
 	}
 
@@ -88,7 +86,6 @@ public class ProductService {
 		if(request.getProductId() == null){
 			throw new CustomException(DELETE_PRODUCT_INFO_NULL);
 		}
-		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
 		Product product = productRepository.findById(request.getProductId()).get();
 		productRepository.save(
 			Product.builder()
@@ -103,7 +100,8 @@ public class ProductService {
 				.transactionPlace(product.getTransactionPlace())
 				.createdDt(product.getCreatedDt())
 				.updatedDt(product.getUpdatedDt())
-				.transactionStatus(false)
+				.transactionStatus(product.isTransactionStatus())
+				.deleteDt(LocalDateTime.now())
 				.build());
 	}
 

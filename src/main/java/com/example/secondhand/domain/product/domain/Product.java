@@ -23,11 +23,8 @@ public class Product extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long productId;
-	@Column(unique = true)
 	private Long userId;
-	@Column(unique = true)
 	private Long areaId;
-	@Column(unique = true)
 	private Long categoryId;
 	private String title;
 	private String content;

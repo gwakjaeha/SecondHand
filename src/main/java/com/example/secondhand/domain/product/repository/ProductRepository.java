@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-	List<Product> findByAreaIdAndCategoryIdAndDeleteDt(long areaId, long categoryId, boolean isOnSale);
+	List<Product> findByAreaIdAndCategoryIdAndDeleteDtIsNull(long areaId, long categoryId);
 }
