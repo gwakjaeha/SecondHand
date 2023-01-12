@@ -27,5 +27,7 @@ public class UpdateProductDto {
 		private Long price;
 		@NotNull
 		private String transactionPlace;
+		@NotNull
+		private boolean transactionStatus;
 	}
 }

@@ -80,7 +80,7 @@ public class ProductService {
 				.imagePath(imgFilePath)
 				.price(request.getPrice())
 				.transactionPlace(request.getTransactionPlace())
-				.transactionStatus(true)
+				.transactionStatus(request.isTransactionStatus())
 				.build());
 	}
 
