@@ -17,31 +17,35 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.example.secondhand.SecondHandApplication;
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.Account;
 import com.example.secondhand.domain.user.dto.CreateAccountDto;
 import com.example.secondhand.domain.user.dto.LoginAccountDto;
-import com.example.secondhand.domain.user.dto.ReadAccountDto;
 import com.example.secondhand.domain.user.dto.TokenDto;
 import com.example.secondhand.domain.user.repository.AccountRepository;
 import com.example.secondhand.global.config.jwt.TokenProvider;
 import com.example.secondhand.global.config.redis.RedisDao;
 import com.example.secondhand.global.exception.CustomException;
 import java.util.Optional;
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
 
 @ExtendWith(MockitoExtension.class) //Test 클래스가 Mockito 를 사용.
 class AccountServiceTest {
@@ -61,6 +65,7 @@ class AccountServiceTest {
 	private TokenProvider tokenProvider;
 	@Mock
 	private RedisDao redisDao;
+
 
 	@Test
 	void testCreateAccount() throws Exception{
@@ -164,31 +169,31 @@ class AccountServiceTest {
 		assertEquals(new CustomException(PASSWORD_SIZE_ERROR).getCustomErrorCode(), exception.getCustomErrorCode());
 	}
 
-//	@Test
-//	void testLoginAccount() throws Exception{
-//		// getAccessAndRefreshToken 메서드 내부 로직에 대한 테스트 코드 작성이 어려움 (아래 코드).
-//		// Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-//		// 우선은 getAccessAndRefreshToken 내부 로직이 수행되지 않게 하기 위해 아래처럼 코드 작성하였으나, private 메서드인 getAccessAndRefreshToken 에 접근이 어려움.
-//		AccountService accountServiceForDoReturn = mock(AccountService.class);
-//
-//		//getAccessAndRefreshToken 의 내부 메소드가 실행되지 않음.
-//		doReturn(TokenDto.Response.builder()
-//			.grantType("Bearer")
-//			.accessToken("access-token")
-//			.refreshToken("refresh-token").build()).when(accountServiceForDoReturn).getAccessAndRefreshToken(any());
-//
-//		//when
-//		TokenDto.Response response = accountServiceForDoReturn.getAccessAndRefreshToken(
-//			LoginAccountDto.Request.builder()
-//				.email("example@email.com")
-//				.password("password")
-//				.build());
-//
-//		//then
-//		assertEquals("Bearer", response.getGrantType());
-//		assertEquals("access-token", response.getAccessToken());
-//		assertNotNull("refresh-token", response.getRefreshToken());
-//	}
+	@Test
+	void testLoginAccount() throws Exception{
+
+		//given
+		given(accountRepository.findByEmail(anyString()))
+			.willReturn(Optional.ofNullable(Account.builder()
+				.password("password")
+				.status("ING")
+				.build()));
+		given(passwordEncoder.matches(anyString(), anyString()))
+			.willReturn(true);
+		given(authenticationManagerBuilder.getObject().authenticate(any()))
+			.willReturn(null);
+
+		//when
+		TokenDto.Response response = accountService.loginAccount(LoginAccountDto.Request.builder()
+				.email("example@email.com")
+				.password("password")
+				.build());
+
+		//then
+		assertEquals("Bearer", response.getGrantType());
+		assertEquals("access-token", response.getAccessToken());
+		assertNotNull("refresh-token", response.getRefreshToken());
+	}
 
 	@Test
 	void testNotEmailFormInLogin() throws Exception{

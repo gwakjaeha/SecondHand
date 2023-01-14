@@ -1,6 +1,6 @@
 package com.example.secondhand.domain.product.dto;
 
-import com.example.secondhand.domain.product.domain.Product;
+import com.example.secondhand.domain.product.entity.Product;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 public class ReadProductListDto {
 
@@ -21,6 +22,10 @@ public class ReadProductListDto {
 
 		@NotNull
 		private Long categoryId;
+
+		private String searchWord;
+
+		private int page = 0;
 	}
 
 	@Getter

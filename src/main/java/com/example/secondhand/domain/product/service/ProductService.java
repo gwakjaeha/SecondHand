@@ -2,12 +2,16 @@ package com.example.secondhand.domain.product.service;
 
 import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
-import com.example.secondhand.domain.product.domain.Product;
+import com.example.secondhand.domain.product.entity.Area;
+import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.dto.AddProductDto.Request;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
 import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
+import com.example.secondhand.domain.product.entity.ProductDocument;
+import com.example.secondhand.domain.product.repository.AreaRepository;
 import com.example.secondhand.domain.product.repository.ProductRepository;
+import com.example.secondhand.domain.product.repository.ProductSearchRepository;
 import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
 import com.example.secondhand.domain.user.service.AccountService;
 import com.example.secondhand.global.exception.CustomException;
@@ -16,11 +20,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,20 +39,50 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProductService {
 
 	private final ProductRepository productRepository;
+	private final ProductSearchRepository productSearchRepository;
+	private final AreaRepository areaRepository;
 	private final AccountService accountService;
 	@Value("${baseLocalPath}")
 	private String baseLocalPath;
 	@Value("${baseUrlPath}")
 	private String baseUrlPath;
+	@Value("${pageSize}")
+	private int pageSize;
 
-	public List<ReadProductListDto.Response> readProductList(ReadProductListDto.Request request) {
+	//키워드가 입력된 경우, (지역, 카테고리, 키워드)로 검색을 진행하고,
+	//키워드가 입력되지 않은 경우, (지역, 카테고리)로만 검색을 진행함.
+	//검색을 하면 내 읍면동과 같은 시군구에 속하는 모든 읍면동을 근처 동네로 설정하여 해당 근처 동네들에서 판매되는 상품들을 모두 가져옴.
+	//거리를 기준으로 근처 동네를 계산하는 방식은 읍면동간의 거리들을 모두 계산해야 하므로 연산량이 큼.
+	//추후 만약 거리를 고려해야 한다면, read 할때마다 거리를 계산하는 방식이 아닌,
+	//미리 거리를 계산하여 근처 동네를 구성해 높은 (내 동네-근처 동네) 매핑 테이블을 만들 필요가 있음.
+	@Transactional
+	public Page<ProductDocument> readProductList(ReadProductListDto.Request request) {
 		readProductValidation(request);
-		List<Product> productList = productRepository.findByAreaIdAndCategoryIdAndDeleteDtIsNull(request.getAreaId(), request.getCategoryId());
-		productListValidation(productList);
 
-		return productList.stream().map(ReadProductListDto.Response::response).toList();
+		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
+		Page<ProductDocument> productDocumentList = null;
+
+		//JPA 에서는 from 절의 서브쿼리를 구현하기 어려운 관계로, 여러 쿼리 단계로 나누어서 내 근처 지역 리스트를 가져옴.
+		Area area = areaRepository.findByAreaId(request.getAreaId()).get();
+		//(sido, sigungu) 칼럼을 index로 설정하여, 조회 속도가 빠름.
+		List<Area> areaList = areaRepository.findBySidoAndSigungu(area.getSido(), area.getSigungu());
+		List<Long> areaIdList = areaList.stream().map(Area::getAreaId).collect(Collectors.toList());
+
+		//Elasticsearch 에서 Nori 형태소 분석기를 활용하여 키워드 검색을 수행함.
+		if(request.getSearchWord() == null){
+			productDocumentList = productSearchRepository
+				.findByAreaIdInAndCategoryId(areaIdList, request.getCategoryId(), pageable);
+		} else {
+			productDocumentList = productSearchRepository
+				.findBytitleOrContentOrTransactionPlaceAndAreaIdAndCategoryId
+					(request.getSearchWord(), request.getSearchWord(), request.getSearchWord(),
+						request.getAreaId(), request.getCategoryId(), pageable);
+		}
+
+		return productDocumentList;
 	}
 
+	@Transactional
 	public void addProduct(Request request, MultipartFile imgFile) {
 		addProductValidation(request);
 		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
@@ -62,6 +101,7 @@ public class ProductService {
 				.build());
 	}
 
+	@Transactional
 	public void updateProduct(UpdateProductDto.Request request, MultipartFile imgFile) {
 		updateProductValidation(request);
 		Product product = productRepository.findById(request.getProductId()).get();
@@ -82,6 +122,7 @@ public class ProductService {
 				.build());
 	}
 
+	@Transactional
 	public void deleteProduct(DeleteProductDto.Request request) {
 		if(request.getProductId() == null){
 			throw new CustomException(DELETE_PRODUCT_INFO_NULL);
@@ -105,15 +146,18 @@ public class ProductService {
 				.build());
 	}
 
+	@Transactional
+	public void saveAllProductDocuments() {
+		List<ProductDocument> memberDocumentList
+			= productRepository.findAll().stream().map(ProductDocument::from).collect(Collectors.toList());
+		productSearchRepository.saveAll(memberDocumentList);
+	}
+
+
+
 	private void readProductValidation(ReadProductListDto.Request request) {
 		if(request.getCategoryId() == null || request.getAreaId() == null){
 			throw new CustomException(READ_PRODUCT_INFO_NULL);
-		}
-	}
-
-	private void productListValidation(List<Product> productList) {
-		if(productList.isEmpty()){
-			throw new CustomException(NOT_EXIST_PRODUCT);
 		}
 	}
 

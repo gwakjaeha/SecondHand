@@ -1,7 +1,7 @@
 package com.example.secondhand.domain.user.domain;
 
 import com.example.secondhand.domain.user.status.AccountStatusCode;
-import com.example.secondhand.global.domain.BaseEntity;
+import com.example.secondhand.global.entity.BaseEntity;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;

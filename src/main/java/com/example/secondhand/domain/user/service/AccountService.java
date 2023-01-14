@@ -1,32 +1,12 @@
 package com.example.secondhand.domain.user.service;
 
-import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_ING;
-import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_REQ;
-import static com.example.secondhand.global.exception.CustomErrorCode.DELETE_ACCOUNT_FALSE;
-import static com.example.secondhand.global.exception.CustomErrorCode.DUPLICATE_ACCOUNT;
-import static com.example.secondhand.global.exception.CustomErrorCode.LOGIN_FALSE_NOT_CORRECT_PASSWORD;
-import static com.example.secondhand.global.exception.CustomErrorCode.LOGIN_FALSE_NOT_EXIST_EMAIL;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EMAIL_FORM;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_UUID;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_FOUND_USER;
-import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_CHANGE_FALSE;
-import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_IS_NOT_CHANGE;
-import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_SIZE_ERROR;
-import static com.example.secondhand.global.exception.CustomErrorCode.REFRESH_TOKEN_IS_BAD_REQUEST;
-import static com.example.secondhand.global.exception.CustomErrorCode.REGISTER_INFO_NULL;
+import static com.example.secondhand.domain.user.status.AccountStatusCode.*;
+import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.Account;
-import com.example.secondhand.domain.user.dto.ChangeAccountDto;
-import com.example.secondhand.domain.user.dto.ChangePasswordDto;
+import com.example.secondhand.domain.user.dto.*;
 import com.example.secondhand.domain.user.dto.ChangePasswordDto.LostRequest;
-import com.example.secondhand.domain.user.dto.CreateAccountDto;
-import com.example.secondhand.domain.user.dto.DeleteAccountDto;
-import com.example.secondhand.domain.user.dto.LoginAccountDto;
-import com.example.secondhand.domain.user.dto.LogoutAccountDto;
-import com.example.secondhand.domain.user.dto.ReadAccountDto;
-import com.example.secondhand.domain.user.dto.TokenDto;
-import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
 import com.example.secondhand.domain.user.repository.AccountRepository;
 import com.example.secondhand.global.config.jwt.SecurityUtil;
 import com.example.secondhand.global.config.jwt.TokenProvider;

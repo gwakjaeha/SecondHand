@@ -1,12 +1,8 @@
 package com.example.secondhand.domain.product.dto;
 
-import com.example.secondhand.domain.product.domain.Product;
-import java.time.LocalDateTime;
-import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

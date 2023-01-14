@@ -1,16 +1,21 @@
 package com.example.secondhand.domain.product.controller;
 
-import static com.example.secondhand.domain.user.status.StatusTrue.*;
+import static com.example.secondhand.domain.user.status.StatusTrue.ADD_PRODUCT_INFO_TRUE;
+import static com.example.secondhand.domain.user.status.StatusTrue.DELETE_PRODUCT_INFO_TRUE;
+import static com.example.secondhand.domain.user.status.StatusTrue.READ_PRODUCT_INFO_TRUE;
+import static com.example.secondhand.domain.user.status.StatusTrue.SAVE_PRODUCT_DOCUMENT_TRUE;
+import static com.example.secondhand.domain.user.status.StatusTrue.UPDATE_PRODUCT_INFO_TRUE;
 
 import com.example.secondhand.domain.product.dto.AddProductDto;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
 import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
+import com.example.secondhand.domain.product.entity.ProductDocument;
 import com.example.secondhand.domain.product.service.ProductService;
 import com.example.secondhand.global.dto.ApiResponse;
-import java.util.List;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,9 +35,9 @@ public class ProductController {
 	private final ProductService productService;
 
 	@GetMapping("/product")
-	public ApiResponse<List<ReadProductListDto.Response>> readProduct(
+	public ApiResponse<Page<ProductDocument>> readProduct(
 		@Valid @RequestBody ReadProductListDto.Request request){
-			List<ReadProductListDto.Response> response = productService.readProductList(request);
+			Page<ProductDocument> response = productService.readProductList(request);
 			return ApiResponse.success(READ_PRODUCT_INFO_TRUE,response);
 	}
 
@@ -41,6 +46,12 @@ public class ProductController {
 		@Valid @RequestPart AddProductDto.Request request, @RequestPart(required = false) MultipartFile imgFile){
 		productService.addProduct(request, imgFile);
 		return ApiResponse.success(ADD_PRODUCT_INFO_TRUE);
+	}
+
+	@GetMapping("/product/save")
+	public ApiResponse<String> saveProductDocumentInElasticsearch(){
+		productService.saveAllProductDocuments();
+		return ApiResponse.success(SAVE_PRODUCT_DOCUMENT_TRUE);
 	}
 
 	@PutMapping(value = "/product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})

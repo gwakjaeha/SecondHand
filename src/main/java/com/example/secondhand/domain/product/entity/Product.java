@@ -1,8 +1,7 @@
-package com.example.secondhand.domain.product.domain;
+package com.example.secondhand.domain.product.entity;
 
-import com.example.secondhand.global.domain.BaseEntity;
+import com.example.secondhand.global.entity.BaseEntity;
 import java.time.LocalDateTime;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

@@ -1,9 +1,7 @@
-package com.example.secondhand.global.domain;
+package com.example.secondhand.global.entity;
 
 import java.time.LocalDateTime;
 import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
