@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AreaRepository extends JpaRepository<Area, Long> {
-	Optional<Area> findByAreaId(long areaId);
+	Optional<Area> findByAreaId(Long areaId);
 	List<Area> findBySidoAndSigungu(String sido, String sigungu);
 }

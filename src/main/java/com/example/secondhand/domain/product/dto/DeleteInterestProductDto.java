@@ -7,21 +7,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-public class ReadProductListDto {
+public class DeleteInterestProductDto {
 
 	@Getter
 	@Setter
 	@AllArgsConstructor
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class Request {
-		@NotNull
-		private Long areaId;
 
 		@NotNull
-		private Long categoryId;
+		private Long InterestProductId;
 
-		private String searchWord;
-
-		private int page = 0;
 	}
 }

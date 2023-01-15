@@ -1,18 +1,22 @@
 package com.example.secondhand.domain.product.controller;
 
-import static com.example.secondhand.domain.user.status.StatusTrue.ADD_PRODUCT_INFO_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.DELETE_PRODUCT_INFO_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.READ_PRODUCT_INFO_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.SAVE_PRODUCT_DOCUMENT_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.UPDATE_PRODUCT_INFO_TRUE;
+import static com.example.secondhand.domain.user.status.StatusTrue.*;
+import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_UUID;
 
+import com.example.secondhand.domain.product.dto.AddInterestProductDto;
 import com.example.secondhand.domain.product.dto.AddProductDto;
+import com.example.secondhand.domain.product.dto.DeleteInterestProductDto;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
+import com.example.secondhand.domain.product.dto.ReadInterestProductListDto;
+import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
 import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
+import com.example.secondhand.domain.product.entity.InterestProduct;
+import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.entity.ProductDocument;
 import com.example.secondhand.domain.product.service.ProductService;
 import com.example.secondhand.global.dto.ApiResponse;
+import com.example.secondhand.global.exception.CustomException;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -66,5 +70,33 @@ public class ProductController {
 		@Valid @RequestBody DeleteProductDto.Request request){
 		productService.deleteProduct(request);
 		return ApiResponse.success(DELETE_PRODUCT_INFO_TRUE);
+	}
+
+	@GetMapping("/my-product")
+	public ApiResponse<Page<Product>> readMySellingProduct
+		(@Valid @RequestBody ReadMySellingProductListDto.Request request){
+		Page<Product> response = productService.readMySellingProductList(request);
+		return ApiResponse.success(READ_MY_SELLING_PRODUCT_INFO_TRUE, response);
+	}
+
+	@PostMapping(value = "/interest-product")
+	public ApiResponse<String> addInterestProduct(
+		@Valid @RequestBody AddInterestProductDto.Request request){
+		productService.addInterestProduct(request);
+		return ApiResponse.success(ADD_INTEREST_PRODUCT_INFO_TRUE);
+	}
+
+	@GetMapping(value = "/interest-product")
+	public ApiResponse<Page<InterestProduct>> readInterestProduct(
+		@Valid @RequestBody ReadInterestProductListDto.Request request){
+		Page<InterestProduct> response = productService.readInterestProduct(request);
+		return ApiResponse.success(READ_INTEREST_PRODUCT_INFO_TRUE, response);
+	}
+
+	@DeleteMapping(value = "/interest-product")
+	public ApiResponse<Page<InterestProduct>> deleteInterestProduct(
+		@Valid @RequestBody DeleteInterestProductDto.Request request){
+		productService.deleteInterestProduct(request);
+		return ApiResponse.success(DELETE_INTEREST_PRODUCT_INFO_TRUE);
 	}
 }

@@ -2,7 +2,12 @@ package com.example.secondhand.domain.product.service;
 
 import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
+import com.example.secondhand.domain.product.dto.AddInterestProductDto;
+import com.example.secondhand.domain.product.dto.DeleteInterestProductDto;
+import com.example.secondhand.domain.product.dto.ReadInterestProductListDto;
+import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
 import com.example.secondhand.domain.product.entity.Area;
+import com.example.secondhand.domain.product.entity.InterestProduct;
 import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.dto.AddProductDto.Request;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
@@ -10,6 +15,7 @@ import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
 import com.example.secondhand.domain.product.entity.ProductDocument;
 import com.example.secondhand.domain.product.repository.AreaRepository;
+import com.example.secondhand.domain.product.repository.InterestProductRepository;
 import com.example.secondhand.domain.product.repository.ProductRepository;
 import com.example.secondhand.domain.product.repository.ProductSearchRepository;
 import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
@@ -20,11 +26,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -39,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProductService {
 
 	private final ProductRepository productRepository;
+	private final InterestProductRepository interestProductRepository;
 	private final ProductSearchRepository productSearchRepository;
 	private final AreaRepository areaRepository;
 	private final AccountService accountService;
@@ -153,7 +160,36 @@ public class ProductService {
 		productSearchRepository.saveAll(memberDocumentList);
 	}
 
+	@Transactional
+	public Page<Product> readMySellingProductList(
+		ReadMySellingProductListDto.Request request) {
+		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
+		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		return productRepository.findByUserIdAndDeleteDtIsNull(tokenInfo.getUserId(), pageable);
+	}
 
+	@Transactional
+	public void addInterestProduct(AddInterestProductDto.Request request) {
+		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		interestProductRepository.save(
+			InterestProduct.builder()
+				.userId(tokenInfo.getUserId())
+				.productId(request.getProductId())
+				.build());
+	}
+
+	@Transactional
+	public Page<InterestProduct> readInterestProduct(ReadInterestProductListDto.Request request) {
+		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
+		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		return interestProductRepository.findByUserId(tokenInfo.getUserId(), pageable);
+	}
+
+	@Transactional
+	public void deleteInterestProduct(DeleteInterestProductDto.Request request) {
+		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		interestProductRepository.deleteByInterestProductIdAndUserId(request.getInterestProductId(), tokenInfo.getUserId());
+	}
 
 	private void readProductValidation(ReadProductListDto.Request request) {
 		if(request.getCategoryId() == null || request.getAreaId() == null){

@@ -1,8 +1,0 @@
-GET http://localhost:8080/main/product
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjczNzgxMDc5fQ.5lgnL_CU_qISPwbqTC_izS36eR6TNHYS6YtQwltNFOf1nSh1IOO-WB54HybM7rI5fzhAsndJD8uFXYHdK7qziw
-
-{
-  "areaId" : 300,
-  "categoryId" : 11
-}

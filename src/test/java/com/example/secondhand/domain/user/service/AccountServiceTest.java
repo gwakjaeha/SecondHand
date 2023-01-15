@@ -25,7 +25,9 @@ import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.Account;
 import com.example.secondhand.domain.user.dto.CreateAccountDto;
 import com.example.secondhand.domain.user.dto.LoginAccountDto;
+import com.example.secondhand.domain.user.dto.ReadAccountDto;
 import com.example.secondhand.domain.user.dto.TokenDto;
+import com.example.secondhand.domain.user.dto.TokenDto.Response;
 import com.example.secondhand.domain.user.repository.AccountRepository;
 import com.example.secondhand.global.config.jwt.TokenProvider;
 import com.example.secondhand.global.config.redis.RedisDao;
@@ -40,8 +42,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.AbstractSecurityBuilder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -58,13 +62,6 @@ class AccountServiceTest {
 	private MailComponents mailComponents;
 	@Mock
 	private PasswordEncoder passwordEncoder;
-
-	@Mock
-	private AuthenticationManagerBuilder authenticationManagerBuilder;
-	@Mock
-	private TokenProvider tokenProvider;
-	@Mock
-	private RedisDao redisDao;
 
 
 	@Test
@@ -180,14 +177,19 @@ class AccountServiceTest {
 				.build()));
 		given(passwordEncoder.matches(anyString(), anyString()))
 			.willReturn(true);
-		given(authenticationManagerBuilder.getObject().authenticate(any()))
-			.willReturn(null);
+
+		LoginAccountDto.Request request = new LoginAccountDto.Request("kjh19920718@gmail.com", "123456");
+
+		given(accountService.loginAccount(request)).willReturn(
+			Response.builder()
+				.grantType("Bearer")
+				.accessToken("access-token")
+				.refreshToken("refresh-token")
+				.build()
+		);
 
 		//when
-		TokenDto.Response response = accountService.loginAccount(LoginAccountDto.Request.builder()
-				.email("example@email.com")
-				.password("password")
-				.build());
+		TokenDto.Response response = accountService.loginAccount(request);
 
 		//then
 		assertEquals("Bearer", response.getGrantType());
@@ -290,40 +292,25 @@ class AccountServiceTest {
 		assertEquals(exception.getCustomErrorCode(), NOT_EXIST_UUID);
 	}
 
-//	@Test
-//	void testReadAccountInfo() throws Exception{
-//		// getTokenInfo 메서드 내부 로직에 대한 테스트 코드 작성이 어려움 (아래 코드).
-//		// return TokenInfoResponseDto.Response(
-//		//			Objects.requireNonNull(SecurityUtil.getCurrentUsername()
-//		//				.flatMap(accountRepository::findOneByEmail)
-//		//				.orElse(null))
-//		//		);
-//		// 우선은 getTokenInfo 내부 로직이 수행되지 않게 하기 위해 아래처럼 코드 작성하였으나, private 메서드인 getTokenInfo 접근이 어려움.
-//		AccountService accountServiceForDoReturn = mock(AccountService.class);
-//
-//		//given
-//		given(accountRepository.findByEmail(anyString()))
-//			.willReturn(Optional.of(Account.builder()
-//				.areaId(300L)
-//				.email("example@email.com")
-//				.userName("name")
-//				.phone("010-1111-2222")
-//				.build()));
-//
-//		//getTokenInfo 메소드의 내부가 실행되지 않음.
-//		doReturn(TokenDto.Response.builder()
-//			.grantType("Bearer")
-//			.accessToken("access-token")
-//			.refreshToken("refresh-token").build()).when(accountServiceForDoReturn).getTokenInfo();
-//
-//		//when
-//		ReadAccountDto readAccountDto = accountServiceForDoReturn.readAccountInfo();
-//		//then
-//		assertEquals(300, readAccountDto.getAreaId());
-//		assertEquals("example@email.com", readAccountDto.getEmail());
-//		assertEquals("name", readAccountDto.getUserName());
-//		assertEquals("010-1111-2222", readAccountDto.getPhone());
-//	}
+	@Test
+	void testReadAccountInfo() throws Exception{
+		//given
+		given(accountRepository.findByEmail(anyString()))
+			.willReturn(Optional.of(Account.builder()
+				.areaId(300L)
+				.email("example@email.com")
+				.userName("name")
+				.phone("010-1111-2222")
+				.build()));
+
+		//when
+		ReadAccountDto readAccountDto = accountService.readAccountInfo();
+		//then
+		assertEquals(300, readAccountDto.getAreaId());
+		assertEquals("example@email.com", readAccountDto.getEmail());
+		assertEquals("name", readAccountDto.getUserName());
+		assertEquals("010-1111-2222", readAccountDto.getPhone());
+	}
 
 	@Test
 	void testReissue() throws Exception{
