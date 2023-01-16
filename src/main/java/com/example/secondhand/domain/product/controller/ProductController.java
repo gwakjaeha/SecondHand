@@ -1,7 +1,6 @@
 package com.example.secondhand.domain.product.controller;
 
 import static com.example.secondhand.domain.user.status.StatusTrue.*;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_UUID;
 
 import com.example.secondhand.domain.product.dto.AddInterestProductDto;
 import com.example.secondhand.domain.product.dto.AddProductDto;
@@ -16,7 +15,6 @@ import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.entity.ProductDocument;
 import com.example.secondhand.domain.product.service.ProductService;
 import com.example.secondhand.global.dto.ApiResponse;
-import com.example.secondhand.global.exception.CustomException;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -58,17 +56,17 @@ public class ProductController {
 		return ApiResponse.success(SAVE_PRODUCT_DOCUMENT_TRUE);
 	}
 
-	@PutMapping(value = "/product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+	@PutMapping(value = "/my-product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> updateProduct(
 		@Valid @RequestPart UpdateProductDto.Request request, @RequestPart(required = false) MultipartFile imgFile){
-		productService.updateProduct(request, imgFile);
+		productService.updateMySellingProduct(request, imgFile);
 		return ApiResponse.success(UPDATE_PRODUCT_INFO_TRUE);
 	}
 
-	@DeleteMapping(value = "/product")
+	@DeleteMapping(value = "/my-product")
 	public ApiResponse<String> deleteProduct(
 		@Valid @RequestBody DeleteProductDto.Request request){
-		productService.deleteProduct(request);
+		productService.deleteMySellingProduct(request);
 		return ApiResponse.success(DELETE_PRODUCT_INFO_TRUE);
 	}
 

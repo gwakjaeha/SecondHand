@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 	Page<Product> findByUserIdAndDeleteDtIsNull(Long userId, Pageable pageable);
+	Optional<Product> findByProductIdAndUserId(Long productId, Long userId);
 }

@@ -20,6 +20,7 @@ import com.example.secondhand.domain.product.repository.ProductRepository;
 import com.example.secondhand.domain.product.repository.ProductSearchRepository;
 import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
 import com.example.secondhand.domain.user.service.AccountService;
+import com.example.secondhand.global.config.redis.RedisDao;
 import com.example.secondhand.global.exception.CustomException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,12 +50,15 @@ public class ProductService {
 	private final ProductSearchRepository productSearchRepository;
 	private final AreaRepository areaRepository;
 	private final AccountService accountService;
+	private final RedisDao redisDao;
 	@Value("${baseLocalPath}")
 	private String baseLocalPath;
 	@Value("${baseUrlPath}")
 	private String baseUrlPath;
 	@Value("${pageSize}")
 	private int pageSize;
+	@Value("${interestDegreePrefix}")
+	private String INTEREST_DEGREE_PREFIX;
 
 	//키워드가 입력된 경우, (지역, 카테고리, 키워드)로 검색을 진행하고,
 	//키워드가 입력되지 않은 경우, (지역, 카테고리)로만 검색을 진행함.
@@ -109,9 +113,11 @@ public class ProductService {
 	}
 
 	@Transactional
-	public void updateProduct(UpdateProductDto.Request request, MultipartFile imgFile) {
+	public void updateMySellingProduct(UpdateProductDto.Request request, MultipartFile imgFile) {
 		updateProductValidation(request);
-		Product product = productRepository.findById(request.getProductId()).get();
+		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		Product product = productRepository.findByProductIdAndUserId(request.getProductId(),
+			tokenInfo.getUserId()).get();
 		String imgFilePath = getSavedImageFilePath(imgFile);
 		productRepository.save(
 			Product.builder()
@@ -130,11 +136,13 @@ public class ProductService {
 	}
 
 	@Transactional
-	public void deleteProduct(DeleteProductDto.Request request) {
+	public void deleteMySellingProduct(DeleteProductDto.Request request) {
 		if(request.getProductId() == null){
 			throw new CustomException(DELETE_PRODUCT_INFO_NULL);
 		}
-		Product product = productRepository.findById(request.getProductId()).get();
+		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		Product product = productRepository.findByProductIdAndUserId(request.getProductId(),
+			tokenInfo.getUserId()).get();
 		productRepository.save(
 			Product.builder()
 				.productId(product.getProductId())
@@ -176,6 +184,14 @@ public class ProductService {
 				.userId(tokenInfo.getUserId())
 				.productId(request.getProductId())
 				.build());
+		if(redisDao.getValues(INTEREST_DEGREE_PREFIX + request.getProductId()) != null){
+			int interestDegree = Integer.parseInt(redisDao.getValues(INTEREST_DEGREE_PREFIX + request.getProductId()));
+			interestDegree++;
+			redisDao.setValues(INTEREST_DEGREE_PREFIX + request.getProductId(), String.valueOf(interestDegree));
+		} else {
+			int interestDegree = interestProductRepository.countByProductId(request.getProductId());
+			redisDao.setValues(INTEREST_DEGREE_PREFIX + request.getProductId(), String.valueOf(interestDegree));
+		}
 	}
 
 	@Transactional
