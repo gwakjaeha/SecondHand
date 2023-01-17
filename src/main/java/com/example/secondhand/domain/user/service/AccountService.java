@@ -82,7 +82,6 @@ public class AccountService {
 
 	@Transactional
 	public void changeAccountInfo(ChangeAccountDto.Request request) {
-		changeAccountInfoValidation(request);
 		TokenInfoResponseDto tokenInfo = getTokenInfo();
 		accountRepository.save(
 			Account.builder()
@@ -209,10 +208,6 @@ public class AccountService {
 
 	private void createAccountValidation(CreateAccountDto.Request request){
 
-		if (request.getAreaId() == null || request.getEmail() == null || request.getPassword() == null
-			|| request.getUserName() == null || request.getPhone() == null)
-			throw new CustomException(REGISTER_INFO_NULL);
-
 		if (accountRepository.existsByEmail(request.getEmail()))
 			throw new CustomException(DUPLICATE_ACCOUNT);
 
@@ -245,12 +240,6 @@ public class AccountService {
 
 		if(account.ACCOUNT_STATUS_WITHDRAW.equals(account.getStatus())){
 			throw new CustomException(CustomErrorCode.WITHDRAW_EMAIL);
-		}
-	}
-
-	private void changeAccountInfoValidation(ChangeAccountDto.Request request) {
-		if (request.getAreaId() == null || request.getUserName() == null || request.getPhone() == null){
-			throw new CustomException(CustomErrorCode.UPDATE_INFO_NULL);
 		}
 	}
 
