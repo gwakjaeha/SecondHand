@@ -8,6 +8,7 @@ import com.example.secondhand.domain.product.dto.DeleteInterestProductDto;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
 import com.example.secondhand.domain.product.dto.ReadInterestProductListDto;
 import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
+import com.example.secondhand.domain.product.dto.ReadPopularProductListDto;
 import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
 import com.example.secondhand.domain.product.entity.InterestProduct;
@@ -96,5 +97,12 @@ public class ProductController {
 		@Valid @RequestBody DeleteInterestProductDto.Request request){
 		productService.deleteInterestProduct(request);
 		return ApiResponse.success(DELETE_INTEREST_PRODUCT_INFO_TRUE);
+	}
+
+	@GetMapping("/popular-product")
+	public ApiResponse<Page<Product>> readPopularProduct
+		(@Valid @RequestBody ReadPopularProductListDto.Request request){
+		Page<Product> response = productService.readPopularProductList(request);
+		return ApiResponse.success(READ_POPULAR_PRODUCT_INFO_TRUE, response);
 	}
 }

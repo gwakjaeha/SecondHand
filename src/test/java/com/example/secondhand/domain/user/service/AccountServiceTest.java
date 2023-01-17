@@ -20,36 +20,25 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.example.secondhand.SecondHandApplication;
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.Account;
 import com.example.secondhand.domain.user.dto.CreateAccountDto;
 import com.example.secondhand.domain.user.dto.LoginAccountDto;
 import com.example.secondhand.domain.user.dto.ReadAccountDto;
 import com.example.secondhand.domain.user.dto.TokenDto;
-import com.example.secondhand.domain.user.dto.TokenDto.Response;
 import com.example.secondhand.domain.user.repository.AccountRepository;
 import com.example.secondhand.global.config.jwt.TokenProvider;
 import com.example.secondhand.global.config.redis.RedisDao;
 import com.example.secondhand.global.exception.CustomException;
 import java.util.Optional;
-import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.AbstractSecurityBuilder;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ContextConfiguration;
 
 @ExtendWith(MockitoExtension.class) //Test 클래스가 Mockito 를 사용.
 class AccountServiceTest {
@@ -62,6 +51,12 @@ class AccountServiceTest {
 	private MailComponents mailComponents;
 	@Mock
 	private PasswordEncoder passwordEncoder;
+	@Mock
+	private AuthenticationManager authenticationManager;
+	@Mock
+	private TokenProvider tokenProvider;
+	@Mock
+	private RedisDao redisDao;
 
 
 	@Test
@@ -177,16 +172,14 @@ class AccountServiceTest {
 				.build()));
 		given(passwordEncoder.matches(anyString(), anyString()))
 			.willReturn(true);
+		given(authenticationManager.authenticate(any()))
+			.willReturn(null);
+		given(tokenProvider.createToken(any()))
+			.willReturn("access-token");
+		given(tokenProvider.createRefreshToken(any()))
+			.willReturn("refresh-token");
 
-		LoginAccountDto.Request request = new LoginAccountDto.Request("kjh19920718@gmail.com", "123456");
-
-		given(accountService.loginAccount(request)).willReturn(
-			Response.builder()
-				.grantType("Bearer")
-				.accessToken("access-token")
-				.refreshToken("refresh-token")
-				.build()
-		);
+		LoginAccountDto.Request request = new LoginAccountDto.Request("example@email.com", "password");
 
 		//when
 		TokenDto.Response response = accountService.loginAccount(request);
@@ -194,7 +187,7 @@ class AccountServiceTest {
 		//then
 		assertEquals("Bearer", response.getGrantType());
 		assertEquals("access-token", response.getAccessToken());
-		assertNotNull("refresh-token", response.getRefreshToken());
+		assertEquals("refresh-token", response.getRefreshToken());
 	}
 
 	@Test
