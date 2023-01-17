@@ -1,32 +1,12 @@
 package com.example.secondhand.domain.user.service;
 
-import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_ING;
-import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_REQ;
-import static com.example.secondhand.global.exception.CustomErrorCode.DELETE_ACCOUNT_FALSE;
-import static com.example.secondhand.global.exception.CustomErrorCode.DUPLICATE_ACCOUNT;
-import static com.example.secondhand.global.exception.CustomErrorCode.LOGIN_FALSE;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EMAIL_FORM;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_UUID;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_FOUND_USER;
-import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_CHANGE_FALSE;
-import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_IS_NOT_CHANGE;
-import static com.example.secondhand.global.exception.CustomErrorCode.PASSWORD_SIZE_ERROR;
-import static com.example.secondhand.global.exception.CustomErrorCode.REFRESH_TOKEN_IS_BAD_REQUEST;
-import static com.example.secondhand.global.exception.CustomErrorCode.REGISTER_INFO_NULL;
+import static com.example.secondhand.domain.user.status.AccountStatusCode.*;
+import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.Account;
-import com.example.secondhand.domain.user.dto.ChangeAccountDto;
-import com.example.secondhand.domain.user.dto.ChangePasswordDto;
-import com.example.secondhand.domain.user.dto.ChangePasswordDto.lostRequest;
-import com.example.secondhand.domain.user.dto.CreateAccountDto;
-import com.example.secondhand.domain.user.dto.CreateAccountDto.Request;
-import com.example.secondhand.domain.user.dto.DeleteAccountDto;
-import com.example.secondhand.domain.user.dto.LoginAccountDto;
-import com.example.secondhand.domain.user.dto.LogoutAccountDto;
-import com.example.secondhand.domain.user.dto.ReadAccountDto;
-import com.example.secondhand.domain.user.dto.TokenDto;
-import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
+import com.example.secondhand.domain.user.dto.*;
+import com.example.secondhand.domain.user.dto.ChangePasswordDto.LostRequest;
 import com.example.secondhand.domain.user.repository.AccountRepository;
 import com.example.secondhand.global.config.jwt.SecurityUtil;
 import com.example.secondhand.global.config.jwt.TokenProvider;
@@ -40,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -59,40 +40,24 @@ public class AccountService {
 	private final TokenProvider tokenProvider;
 	private final MailComponents mailComponents;
 
+	@Value("${serviceUrl}")
+	private String SERVICE_URL;
+
+	@Value("${accessTokenPrefix}")
+	private String ACCESS_TOKEN_PREFIX;
+
+	@Value("${refreshTokenPrefix}")
+	private String REFRESH_TOKEN_PREFIX;
+
 	@Transactional
 	public void createAccount(CreateAccountDto.Request request) {
 		createAccountValidation(request);
-		accountRepository.save(Account.builder()
-			.areaId(request.getAreaId())
-			.email(request.getEmail())
-			.password(passwordEncoder.encode(request.getPassword()))
-			.userName(request.getUserName())
-			.phone(request.getPhone())
-			.admin(false)
-			.status(ACCOUNT_STATUS_REQ)
-			.build());
-
-		sendEmail(request.getEmail());
+		sendEmailAndSaveAccount(request);
 	}
 
 	public TokenDto.Response loginAccount(LoginAccountDto.Request request) {
 		loginAccountValidation(request);
 		return getAccessAndRefreshToken(request);
-	}
-
-	@Transactional
-	public void sendEmail(String email) {
-		String uuid = UUID.randomUUID().toString();
-		Optional<Account> optionalAccount = accountRepository.findByEmail(email);
-		Account account = optionalAccount.get();
-		account.setEmailAuthKey(uuid);
-		accountRepository.save(account);
-
-		String subject = "중고물품 거래 서비스 사이트 가입을 축하드립니다.";
-		String text = "<p>중고물품 거래 서비스 사이트 가입을 축하드립니다. </p><p>아래 링크를 클릭하셔서 가입을 완료하세요.</p>"
-			+ "<div><a target='_blank' href='http://localhost:8080/auth/auth-email?id=" + uuid + "'> 가입 완료 </a></div>";
-
-		mailComponents.sendMail(email,subject,text);
 	}
 
 	@Transactional
@@ -130,8 +95,8 @@ public class AccountService {
 				.status(tokenInfo.getStatus())
 				.emailAuthKey(tokenInfo.getEmailAuthKey())
 				.admin(tokenInfo.isAdmin())
-				.createDt(tokenInfo.getCreateDt())
-				.updateDt(LocalDateTime.now())
+				.createdDt(tokenInfo.getCreateDt())
+				.updatedDt(LocalDateTime.now())
 				.build()
 		);
 	}
@@ -151,14 +116,14 @@ public class AccountService {
 				.status(tokenInfo.getStatus())
 				.emailAuthKey(tokenInfo.getEmailAuthKey())
 				.admin(tokenInfo.isAdmin())
-				.createDt(tokenInfo.getCreateDt())
-				.updateDt(LocalDateTime.now())
+				.createdDt(tokenInfo.getCreateDt())
+				.updatedDt(LocalDateTime.now())
 				.build()
 		);
 	}
 
 	@Transactional
-	public void changeLostPassword(ChangePasswordDto.lostRequest request) {
+	public void changeLostPassword(ChangePasswordDto.LostRequest request) {
 		TokenInfoResponseDto accountInfo = getAccountInfo(request.getEmail());
 		changeLostPasswordValidation(request, accountInfo.getPassword());
 		accountRepository.save(
@@ -172,8 +137,8 @@ public class AccountService {
 				.status(accountInfo.getStatus())
 				.emailAuthKey(accountInfo.getEmailAuthKey())
 				.admin(accountInfo.isAdmin())
-				.createDt(accountInfo.getCreateDt())
-				.updateDt(LocalDateTime.now())
+				.createdDt(accountInfo.getCreateDt())
+				.updatedDt(LocalDateTime.now())
 				.build()
 		);
 	}
@@ -199,8 +164,8 @@ public class AccountService {
 				.status(tokenInfo.getStatus())
 				.emailAuthKey(tokenInfo.getEmailAuthKey())
 				.admin(tokenInfo.isAdmin())
-				.createDt(tokenInfo.getCreateDt())
-				.updateDt(tokenInfo.getUpdateDt())
+				.createdDt(tokenInfo.getCreateDt())
+				.updatedDt(tokenInfo.getUpdateDt())
 				.deleteDt(LocalDateTime.now())
 				.build()
 		);
@@ -208,7 +173,7 @@ public class AccountService {
 
 	public TokenDto.Response reissue(TokenDto.Request request) {
 		String email = tokenProvider.getRefreshTokenInfo(request.getRefreshToken());
-		String rtkInRedis = redisDao.getValues("refreshToken:" + email);
+		String rtkInRedis = redisDao.getValues(REFRESH_TOKEN_PREFIX + email);
 		if (Objects.isNull(rtkInRedis) || !rtkInRedis.equals(request.getRefreshToken()))
 			throw new CustomException(REFRESH_TOKEN_IS_BAD_REQUEST);
 
@@ -219,7 +184,30 @@ public class AccountService {
 			.build();
 	}
 
-	private void createAccountValidation(Request request){
+	@Transactional
+	public void sendEmailAndSaveAccount(CreateAccountDto.Request request) {
+
+		String uuid = UUID.randomUUID().toString();
+
+		Account savedAccount = accountRepository.save(Account.builder()
+			.areaId(request.getAreaId())
+			.email(request.getEmail())
+			.password(passwordEncoder.encode(request.getPassword()))
+			.userName(request.getUserName())
+			.phone(request.getPhone())
+			.admin(false)
+			.status(ACCOUNT_STATUS_REQ)
+			.emailAuthKey(uuid)
+			.build());
+
+		String subject = "중고물품 거래 서비스 사이트 가입을 축하드립니다.";
+		String text = "<p>중고물품 거래 서비스 사이트 가입을 축하드립니다. </p><p>아래 링크를 클릭하셔서 가입을 완료하세요.</p>"
+			+ "<div><a target='_blank' href='" + SERVICE_URL + "/auth/auth-email?id=" + uuid + "'> 가입 완료 </a></div>";
+
+		mailComponents.sendMail(savedAccount.getEmail(), subject, text);
+	}
+
+	private void createAccountValidation(CreateAccountDto.Request request){
 
 		if (request.getAreaId() == null || request.getEmail() == null || request.getPassword() == null
 			|| request.getUserName() == null || request.getPhone() == null)
@@ -241,10 +229,10 @@ public class AccountService {
 			throw new CustomException(NOT_EMAIL_FORM);
 
 		Account account = accountRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new CustomException(LOGIN_FALSE));
+			.orElseThrow(() -> new CustomException(LOGIN_FALSE_NOT_EXIST_EMAIL));
 
 		if (!passwordEncoder.matches(request.getPassword(), account.getPassword())) {
-			throw new CustomException(LOGIN_FALSE);
+			throw new CustomException(LOGIN_FALSE_NOT_CORRECT_PASSWORD);
 		}
 
 		if(account.ACCOUNT_STATUS_REQ.equals(account.getStatus())){
@@ -266,7 +254,7 @@ public class AccountService {
 		}
 	}
 
-	private void changeLostPasswordValidation(lostRequest request, String password) {
+	private void changeLostPasswordValidation(LostRequest request, String password) {
 		accountRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 		if (passwordEncoder.matches(request.getNewPassword(), password)) {
@@ -288,17 +276,18 @@ public class AccountService {
 		}
 	}
 
-	public TokenDto.Response getAccessAndRefreshToken(LoginAccountDto.Request request){
+	private TokenDto.Response getAccessAndRefreshToken(LoginAccountDto.Request request){
 		UsernamePasswordAuthenticationToken authenticationToken =
 			new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
 
 		//loadUserByUsername() 를 통해 권한 정보도 포함시킴.
 		Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+		//헤더의 인증정보를 스레드 내 저장소에 담아놓고 해당 스레드에서 필요 시 꺼내서 사용하기 위함.
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		String atk = tokenProvider.createToken(authentication);
 		String rtk = tokenProvider.createRefreshToken(request.getEmail());
 
-		redisDao.setValues("refreshToken:" + request.getEmail(), rtk, Duration.ofDays(14));
+		redisDao.setValues(REFRESH_TOKEN_PREFIX + request.getEmail(), rtk, Duration.ofDays(14));
 
 		return TokenDto.Response.builder()
 			.grantType("Bearer")
@@ -306,7 +295,7 @@ public class AccountService {
 			.refreshToken(rtk).build();
 	}
 
-	private TokenInfoResponseDto getTokenInfo() {
+	public TokenInfoResponseDto getTokenInfo() {
 		return TokenInfoResponseDto.Response(
 			Objects.requireNonNull(SecurityUtil.getCurrentUsername()
 				.flatMap(accountRepository::findOneByEmail)
@@ -327,12 +316,12 @@ public class AccountService {
 			.getAuthentication()
 			.getName();
 
-		if(redisDao.getValues("accessToken:" + email) != null){
-			redisDao.deleteValues("accessToken:" + email);
+		if(redisDao.getValues(ACCESS_TOKEN_PREFIX + email) != null){
+			redisDao.deleteValues(ACCESS_TOKEN_PREFIX + email);
 		}
 
 		//추후 서비스 사용시, JwtFilter 에서 해당 Access Token 은 유효하지 않은 것으로 처리하기 위해 필요.
-		redisDao.setValues("accessToken:" + atk, "logout", Duration.ofMillis(
+		redisDao.setValues(ACCESS_TOKEN_PREFIX + atk, "logout", Duration.ofMillis(
 			tokenProvider.getExpiration(atk)
 		));
 	}

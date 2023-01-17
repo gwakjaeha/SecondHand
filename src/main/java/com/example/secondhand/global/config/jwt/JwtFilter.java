@@ -9,6 +9,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -19,6 +20,9 @@ public class JwtFilter extends GenericFilterBean {
 
     private final RedisDao redisDao;
     private TokenProvider tokenProvider;
+
+    @Value("${accessTokenPrefix}")
+    private String ACCESS_TOKEN_PREFIX;
 
     public JwtFilter(TokenProvider tokenProvider, RedisDao redisDao) {
         this.tokenProvider = tokenProvider;
@@ -39,7 +43,7 @@ public class JwtFilter extends GenericFilterBean {
         String requestURI = httpServletRequest.getRequestURI();
 
         if (jwt != null && tokenProvider.validateToken(jwt)) {
-            if (redisDao.getValues("accessToken:" + jwt) == null) {
+            if (redisDao.getValues(ACCESS_TOKEN_PREFIX + jwt) == null) {
                 Authentication authentication = tokenProvider.getAuthentication(jwt);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.info("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);

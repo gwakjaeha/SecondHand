@@ -1,9 +1,11 @@
 package com.example.secondhand.domain.user.dto;
 
 import javax.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 public class ChangePasswordDto {
@@ -11,6 +13,7 @@ public class ChangePasswordDto {
 	@Getter
 	@Setter
 	@AllArgsConstructor
+	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class Request {
 		@NotNull
 		private String email;
@@ -23,7 +26,7 @@ public class ChangePasswordDto {
 	@Getter
 	@Setter
 	@AllArgsConstructor
-	public static class lostRequest {
+	public static class LostRequest {
 		@NotNull
 		private String email;
 		@NotNull

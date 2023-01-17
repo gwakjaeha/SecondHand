@@ -2,6 +2,7 @@ package com.example.secondhand.domain.user.dto;
 
 import com.example.secondhand.domain.user.domain.Account;
 import java.time.LocalDateTime;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class TokenInfoResponseDto {
     private Long userId;
@@ -36,8 +37,8 @@ public class TokenInfoResponseDto {
             .status(account.getStatus())
             .emailAuthKey(account.getEmailAuthKey())
             .admin(account.isAdmin())
-            .createDt(account.getCreateDt())
-            .updateDt(account.getUpdateDt())
+            .createDt(account.getCreatedDt())
+            .updateDt(account.getUpdatedDt())
             .deleteDt(account.getDeleteDt())
             .build();
     }

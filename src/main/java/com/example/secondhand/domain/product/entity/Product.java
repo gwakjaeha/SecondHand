@@ -1,9 +1,7 @@
-package com.example.secondhand.domain.user.domain;
+package com.example.secondhand.domain.product.entity;
 
-import com.example.secondhand.domain.user.status.AccountStatusCode;
 import com.example.secondhand.global.entity.BaseEntity;
 import java.time.LocalDateTime;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -20,22 +18,19 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @Entity
-public class Account extends BaseEntity implements AccountStatusCode {
+public class Product extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long productId;
 	private Long userId;
-	@Column(unique = true)
 	private Long areaId;
-	@Column(unique = true)
-	private String email;
-	private String password;
-	private String userName;
-	@Column(unique = true)
-	private String phone;
-	private String status;
-	@Column(unique = true)
-	private String emailAuthKey;
-	private boolean admin;
+	private Long categoryId;
+	private String title;
+	private String content;
+	private String imagePath;
+	private Long price;
+	private String transactionPlace;
+	private boolean transactionStatus;
 
 	private LocalDateTime deleteDt;
 }

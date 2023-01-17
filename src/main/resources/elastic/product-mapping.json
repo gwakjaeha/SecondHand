@@ -1,0 +1,25 @@
+{
+  "properties": {
+    "productId": {"type" : "long"},
+    "userId": {"type" : "long"},
+    "areaId": {"type" : "long"},
+    "categoryId": {"type" : "long"},
+    "title" : {
+      "type" : "text",
+      "analyzer" : "my_analyzer"
+    },
+    "content" : {
+      "type" : "text",
+      "analyzer" : "my_analyzer"
+    },
+    "imagePath" : {"type" : "keyword"},
+    "price": {"type" : "long"},
+    "transactionPlace" : {
+      "type" : "text",
+      "analyzer" : "my_analyzer"
+    },
+    "transactionStatus" : {"type" : "boolean"},
+    "createdDt" : {"type" : "date"},
+    "deletedDt" : {"type" : "date"}
+  }
+}
