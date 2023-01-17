@@ -3,6 +3,7 @@ package com.example.secondhand.domain.product.service;
 import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
 import com.example.secondhand.domain.product.dto.AddInterestProductDto;
+import com.example.secondhand.domain.product.dto.AddProductDto;
 import com.example.secondhand.domain.product.dto.DeleteInterestProductDto;
 import com.example.secondhand.domain.product.dto.ReadInterestProductListDto;
 import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
@@ -64,13 +65,12 @@ public class ProductService {
 	//미리 거리를 계산하여 근처 동네를 구성해 높은 (내 동네-근처 동네) 매핑 테이블을 만들 필요가 있음.
 	@Transactional
 	public Page<ProductDocument> readProductList(ReadProductListDto.Request request) {
-		readProductValidation(request);
 
 		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
 		Page<ProductDocument> productDocumentList = null;
 
 		//JPA 에서는 from 절의 서브쿼리를 구현하기 어려운 관계로, 여러 쿼리 단계로 나누어서 내 근처 지역 리스트를 가져옴.
-		Area area = areaRepository.findByAreaId(request.getAreaId()).get();
+		Area area = areaRepository.findById(request.getAreaId()).get();
 		//(sido, sigungu) 칼럼을 index로 설정하여, 조회 속도가 빠름.
 		List<Area> areaList = areaRepository.findBySidoAndSigungu(area.getSido(), area.getSigungu());
 		List<Long> areaIdList = areaList.stream().map(Area::getAreaId).collect(Collectors.toList());
@@ -90,28 +90,31 @@ public class ProductService {
 	}
 
 	@Transactional
-	public void addProduct(Request request, MultipartFile imgFile) {
-		addProductValidation(request);
+	public void addProduct(AddProductDto.Request request, MultipartFile imgFile) {
 		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
 		String imgFilePath = getSavedImageFilePath(imgFile);
-		productRepository.save(
-			Product.builder()
-				.userId(tokenInfo.getUserId())
-				.areaId(tokenInfo.getAreaId())
-				.categoryId(request.getCategoryId())
-				.title(request.getTitle())
-				.content(request.getContent())
-				.imagePath(imgFilePath)
-				.price(request.getPrice())
-				.transactionPlace(request.getTransactionPlace())
-				.transactionStatus(true)
-				.build());
+		Product product = Product.builder()
+			.userId(tokenInfo.getUserId())
+			.areaId(tokenInfo.getAreaId())
+			.categoryId(request.getCategoryId())
+			.title(request.getTitle())
+			.content(request.getContent())
+			.imagePath(imgFilePath)
+			.price(request.getPrice())
+			.transactionPlace(request.getTransactionPlace())
+			.transactionStatus(true)
+			.build();
+
+		productRepository.save(product);
+
+		ProductDocument productDocument = ProductDocument.from(product);
+		productSearchRepository.save(productDocument);
 	}
 
 	@Transactional
 	public void updateProduct(UpdateProductDto.Request request, MultipartFile imgFile) {
-		updateProductValidation(request);
-		Product product = productRepository.findById(request.getProductId()).get();
+		Product product = productRepository.findById(request.getProductId())
+			.orElseThrow(() -> new CustomException(NOT_EXIST_PRODUCT));
 		String imgFilePath = getSavedImageFilePath(imgFile);
 		productRepository.save(
 			Product.builder()
@@ -131,33 +134,9 @@ public class ProductService {
 
 	@Transactional
 	public void deleteProduct(DeleteProductDto.Request request) {
-		if(request.getProductId() == null){
-			throw new CustomException(DELETE_PRODUCT_INFO_NULL);
-		}
 		Product product = productRepository.findById(request.getProductId()).get();
-		productRepository.save(
-			Product.builder()
-				.productId(product.getProductId())
-				.userId(product.getUserId())
-				.areaId(product.getAreaId())
-				.categoryId(product.getCategoryId())
-				.title(product.getTitle())
-				.content(product.getContent())
-				.imagePath(product.getImagePath())
-				.price(product.getPrice())
-				.transactionPlace(product.getTransactionPlace())
-				.createdDt(product.getCreatedDt())
-				.updatedDt(product.getUpdatedDt())
-				.transactionStatus(product.isTransactionStatus())
-				.deleteDt(LocalDateTime.now())
-				.build());
-	}
-
-	@Transactional
-	public void saveAllProductDocuments() {
-		List<ProductDocument> memberDocumentList
-			= productRepository.findAll().stream().map(ProductDocument::from).collect(Collectors.toList());
-		productSearchRepository.saveAll(memberDocumentList);
+		product.setDeleteDt(LocalDateTime.now());
+		productRepository.save(product);
 	}
 
 	@Transactional
@@ -189,26 +168,6 @@ public class ProductService {
 	public void deleteInterestProduct(DeleteInterestProductDto.Request request) {
 		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
 		interestProductRepository.deleteByInterestProductIdAndUserId(request.getInterestProductId(), tokenInfo.getUserId());
-	}
-
-	private void readProductValidation(ReadProductListDto.Request request) {
-		if(request.getCategoryId() == null || request.getAreaId() == null){
-			throw new CustomException(READ_PRODUCT_INFO_NULL);
-		}
-	}
-
-	private void addProductValidation(Request request) {
-		if(request.getCategoryId() == null || request.getTitle() == null || request.getContent() == null
-		|| request.getPrice() == null || request.getTransactionPlace() == null){
-			throw new CustomException(ADD_PRODUCT_INFO_NULL);
-		}
-	}
-
-	private void updateProductValidation(UpdateProductDto.Request request) {
-		if(request.getProductId() == null || request.getCategoryId() == null || request.getTitle() == null
-			|| request.getContent() == null || request.getPrice() == null || request.getTransactionPlace() == null){
-			throw new CustomException(UPDATE_PRODUCT_INFO_NULL);
-		}
 	}
 
 	private String getSavedImageFilePath(MultipartFile imgFile){

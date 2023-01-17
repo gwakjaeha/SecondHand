@@ -52,12 +52,6 @@ public class ProductController {
 		return ApiResponse.success(ADD_PRODUCT_INFO_TRUE);
 	}
 
-	@GetMapping("/product/save")
-	public ApiResponse<String> saveProductDocumentInElasticsearch(){
-		productService.saveAllProductDocuments();
-		return ApiResponse.success(SAVE_PRODUCT_DOCUMENT_TRUE);
-	}
-
 	@PutMapping(value = "/product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> updateProduct(
 		@Valid @RequestPart UpdateProductDto.Request request, @RequestPart(required = false) MultipartFile imgFile){
