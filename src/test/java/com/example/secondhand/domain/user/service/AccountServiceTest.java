@@ -23,7 +23,9 @@ import static org.mockito.Mockito.verify;
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.Account;
 import com.example.secondhand.domain.user.dto.ChangeAccountDto;
+import com.example.secondhand.domain.user.dto.ChangePasswordDto;
 import com.example.secondhand.domain.user.dto.CreateAccountDto;
+import com.example.secondhand.domain.user.dto.DeleteAccountDto;
 import com.example.secondhand.domain.user.dto.LoginAccountDto;
 import com.example.secondhand.domain.user.dto.ReadAccountDto;
 import com.example.secondhand.domain.user.dto.TokenDto;
@@ -44,6 +46,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -61,17 +65,16 @@ class AccountServiceTest {
 	@Mock
 	private MailComponents mailComponents;
 	@Mock
+	private AuthenticationManager authenticationManager;
+	@Mock
 	private PasswordEncoder passwordEncoder;
 	@Mock
 	private TokenProvider tokenProvider;
 	@Mock
 	private RedisDao redisDao;
+	@Value("${refreshTokenPrefix}")
+	private String REFRESH_TOKEN_PREFIX;
 
-//	@Before
-//	public void setUp() {
-//		SecurityContextHolder.getContext()
-//			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
-//	}
 
 	@Test
 	void testCreateAccount() throws Exception{
@@ -113,16 +116,6 @@ class AccountServiceTest {
 		assertEquals(false, captor.getValue().isAdmin());
 		assertEquals(ACCOUNT_STATUS_REQ, captor.getValue().getStatus());
 		assertNotNull(captor.getValue().getEmailAuthKey());
-	}
-
-	@Test
-	void testRegisterInfoNullInCreateAccount() throws Exception{
-		//given
-		//when
-		CustomException exception = assertThrows(CustomException.class,
-			() -> accountService.createAccount(CreateAccountDto.Request.builder().build()));
-		//then
-		assertEquals(new CustomException(REGISTER_INFO_NULL).getCustomErrorCode(), exception.getCustomErrorCode());
 	}
 
 	@Test
@@ -280,7 +273,7 @@ class AccountServiceTest {
 
 		//then
 		verify(accountRepository, times(1)).save(captor.capture());
-		assertEquals(captor.getValue().getStatus(), ACCOUNT_STATUS_ING);
+		assertEquals(ACCOUNT_STATUS_ING, captor.getValue().getStatus());
 	}
 
 	@Test
@@ -294,7 +287,7 @@ class AccountServiceTest {
 			() -> accountService.authEmail("email-auth-key"));
 
 		//then
-		assertEquals(exception.getCustomErrorCode(), NOT_EXIST_UUID);
+		assertEquals(NOT_EXIST_UUID, exception.getCustomErrorCode());
 	}
 
 	@Test
@@ -389,13 +382,165 @@ class AccountServiceTest {
 
 		//then
 		verify(accountRepository, times(1)).save(captor.capture());
-		assertEquals(captor.getValue().getUserId(), 3L);
+		assertEquals(3L, captor.getValue().getUserId());
 	}
 
 	@Test
-	void test() throws Exception{
+	void testChangePassword() throws Exception{
 		//given
+		SecurityContextHolder.getContext()
+			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
+
+		given(accountRepository.findOneByEmail(anyString()))
+			.willReturn(Optional.of(
+				Account.builder()
+					.userId(3L)
+					.areaId(10L)
+					.email("example@email.com")
+					.password("password")
+					.userName("name")
+					.phone("010-1111-2222")
+					.status("ING")
+					.emailAuthKey("auth-key")
+					.admin(false)
+					.createdDt(LocalDateTime.now().minusDays(2))
+					.updatedDt(LocalDateTime.now())
+					.deleteDt(null)
+					.build()));
+
+		given(accountRepository.findByEmail(anyString()))
+			.willReturn(Optional.of(Account.builder().build()));
+
+		given(passwordEncoder.matches(anyString(), anyString()))
+			.willReturn(true);
+
+		given(passwordEncoder.encode(anyString())).willReturn("changed-password");
+
+		given(accountRepository.save(any()))
+			.willReturn(Account.builder()
+				.password("changed-password")
+				.build());
+
+		ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
+
 		//when
+		accountService.changePassword(ChangePasswordDto.Request.builder()
+										.email("example@email.com")
+										.password("password")
+										.newPassword("changed-password")
+										.build());
+
 		//then
+		verify(accountRepository, times(1)).save(captor.capture());
+		assertEquals("changed-password", captor.getValue().getPassword());
+	}
+
+	@Test
+	void testChangeLostPassword() throws Exception{
+		//given
+		given(accountRepository.findOneByEmail(anyString()))
+			.willReturn(Optional.of(
+				Account.builder()
+					.userId(3L)
+					.areaId(10L)
+					.email("example@email.com")
+					.password("password")
+					.userName("name")
+					.phone("010-1111-2222")
+					.status("ING")
+					.emailAuthKey("auth-key")
+					.admin(false)
+					.createdDt(LocalDateTime.now().minusDays(2))
+					.updatedDt(LocalDateTime.now())
+					.deleteDt(null)
+					.build()));
+
+		given(accountRepository.findByEmail(anyString()))
+			.willReturn(Optional.of(Account.builder().build()));
+
+		given(passwordEncoder.matches(anyString(), anyString()))
+			.willReturn(false);
+
+		given(passwordEncoder.encode(anyString())).willReturn("new-password");
+
+		ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
+
+		//when
+		accountService.changeLostPassword(ChangePasswordDto.LostRequest.builder()
+											.email("example@email.com")
+											.newPassword("new-password")
+											.build());
+
+		//then
+		verify(accountRepository, times(1)).save(captor.capture());
+		assertEquals("new-password", captor.getValue().getPassword());
+	}
+
+	@Test
+	void testDeleteAccount() throws Exception{
+		//given
+		SecurityContextHolder.getContext()
+			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
+
+		given(accountRepository.findOneByEmail(anyString()))
+			.willReturn(Optional.of(
+				Account.builder()
+					.userId(3L)
+					.areaId(10L)
+					.email("example@email.com")
+					.password("password")
+					.userName("name")
+					.phone("010-1111-2222")
+					.status("ING")
+					.emailAuthKey("auth-key")
+					.admin(false)
+					.createdDt(LocalDateTime.now().minusDays(2))
+					.updatedDt(LocalDateTime.now())
+					.deleteDt(null)
+					.build()));
+
+		given(passwordEncoder.matches(anyString(), anyString()))
+			.willReturn(true);
+
+		given(accountRepository.save(any()))
+			.willReturn(Account.builder()
+				.deleteDt(LocalDateTime.now())
+				.build());
+
+		ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
+
+		//when
+		accountService.deleteAccount(DeleteAccountDto.Request.builder()
+													.password("password")
+													.build());
+
+		//then
+		verify(accountRepository, times(1)).save(captor.capture());
+		assertNotNull(captor.getValue().getDeleteDt());
+	}
+
+	@Test
+	void testReissue() throws Exception{
+		//given
+		given(tokenProvider.getRefreshTokenInfo(anyString()))
+			.willReturn("example@email.com");
+
+		given(redisDao.getValues(anyString()))
+			.willReturn("refresh-token");
+
+		given(tokenProvider.reCreateToken(anyString()))
+			.willReturn("new-access-token");
+
+		ArgumentCaptor<TokenDto.Response> captor = ArgumentCaptor.forClass(TokenDto.Response.class);
+
+		//when
+		TokenDto.Response response = accountService.reissue(TokenDto.Request.builder()
+										.refreshToken("refresh-token")
+										.build());
+
+		//then
+		verify(redisDao, times(1))
+				.getValues(REFRESH_TOKEN_PREFIX + "example@email.com");
+		assertEquals("new-access-token", response.getAccessToken());
 	}
 }

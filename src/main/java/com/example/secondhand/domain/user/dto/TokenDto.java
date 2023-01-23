@@ -12,6 +12,7 @@ public class TokenDto {
 	@Getter
 	@AllArgsConstructor
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Builder
 	public static class Request {
 		@NotEmpty
 		private String refreshToken;

@@ -14,6 +14,7 @@ public class ChangePasswordDto {
 	@Setter
 	@AllArgsConstructor
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
+	@Builder
 	public static class Request {
 		@NotNull
 		private String email;
@@ -26,6 +27,7 @@ public class ChangePasswordDto {
 	@Getter
 	@Setter
 	@AllArgsConstructor
+	@Builder
 	public static class LostRequest {
 		@NotNull
 		private String email;
