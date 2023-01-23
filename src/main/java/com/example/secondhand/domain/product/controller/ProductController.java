@@ -51,17 +51,17 @@ public class ProductController {
 		return ApiResponse.success(ADD_PRODUCT_INFO_TRUE);
 	}
 
-	@PutMapping(value = "/product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+	@PutMapping(value = "/my-product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> updateProduct(
 		@Valid @RequestPart UpdateProductDto.Request request, @RequestPart(required = false) MultipartFile imgFile){
-		productService.updateMySellingProduct(request, imgFile);
+		productService.updateProduct(request, imgFile);
 		return ApiResponse.success(UPDATE_PRODUCT_INFO_TRUE);
 	}
 
 	@DeleteMapping(value = "/my-product")
 	public ApiResponse<String> deleteProduct(
 		@Valid @RequestBody DeleteProductDto.Request request){
-		productService.deleteMySellingProduct(request);
+		productService.deleteProduct(request);
 		return ApiResponse.success(DELETE_PRODUCT_INFO_TRUE);
 	}
 
