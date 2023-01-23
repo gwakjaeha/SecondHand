@@ -22,23 +22,34 @@ import static org.mockito.Mockito.verify;
 
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.Account;
+import com.example.secondhand.domain.user.dto.ChangeAccountDto;
 import com.example.secondhand.domain.user.dto.CreateAccountDto;
 import com.example.secondhand.domain.user.dto.LoginAccountDto;
 import com.example.secondhand.domain.user.dto.ReadAccountDto;
 import com.example.secondhand.domain.user.dto.TokenDto;
+import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
 import com.example.secondhand.domain.user.repository.AccountRepository;
+import com.example.secondhand.global.config.jwt.SecurityUtil;
 import com.example.secondhand.global.config.jwt.TokenProvider;
 import com.example.secondhand.global.config.redis.RedisDao;
 import com.example.secondhand.global.exception.CustomException;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @ExtendWith(MockitoExtension.class) //Test 클래스가 Mockito 를 사용.
 class AccountServiceTest {
@@ -52,12 +63,15 @@ class AccountServiceTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 	@Mock
-	private AuthenticationManager authenticationManager;
-	@Mock
 	private TokenProvider tokenProvider;
 	@Mock
 	private RedisDao redisDao;
 
+//	@Before
+//	public void setUp() {
+//		SecurityContextHolder.getContext()
+//			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
+//	}
 
 	@Test
 	void testCreateAccount() throws Exception{
@@ -172,8 +186,6 @@ class AccountServiceTest {
 				.build()));
 		given(passwordEncoder.matches(anyString(), anyString()))
 			.willReturn(true);
-		given(authenticationManager.authenticate(any()))
-			.willReturn(null);
 		given(tokenProvider.createToken(any()))
 			.willReturn("access-token");
 		given(tokenProvider.createRefreshToken(any()))
@@ -288,7 +300,27 @@ class AccountServiceTest {
 	@Test
 	void testReadAccountInfo() throws Exception{
 		//given
-		given(accountRepository.findByEmail(anyString()))
+		SecurityContextHolder.getContext()
+			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
+
+		given(accountRepository.findOneByEmail(anyString()))
+			.willReturn(Optional.of(
+				Account.builder()
+					.userId(3L)
+					.areaId(10L)
+					.email("example@email.com")
+					.password("password")
+					.userName("name")
+					.phone("010-1111-2222")
+					.status("ING")
+					.emailAuthKey("auth-key")
+					.admin(false)
+					.createdDt(LocalDateTime.now().minusDays(2))
+					.updatedDt(LocalDateTime.now())
+					.deleteDt(null)
+					.build()));
+
+		given(accountRepository.findById(any()))
 			.willReturn(Optional.of(Account.builder()
 				.areaId(300L)
 				.email("example@email.com")
@@ -306,7 +338,62 @@ class AccountServiceTest {
 	}
 
 	@Test
-	void testReissue() throws Exception{
+	@WithMockUser
+	void testChangeAccountInfo() throws Exception{
+		//given
+		SecurityContextHolder.getContext()
+			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
+
+		given(accountRepository.findOneByEmail(anyString()))
+			.willReturn(Optional.of(
+				Account.builder()
+					.userId(3L)
+					.areaId(10L)
+					.email("example@email.com")
+					.password("password")
+					.userName("name")
+					.phone("010-1111-2222")
+					.status("ING")
+					.emailAuthKey("auth-key")
+					.admin(false)
+					.createdDt(LocalDateTime.now().minusDays(2))
+					.updatedDt(LocalDateTime.now())
+					.deleteDt(null)
+					.build()));
+
+		given(accountRepository.save(any()))
+			.willReturn(Account.builder()
+					.userId(3L)
+					.areaId(10L)
+					.email("example@email.com")
+					.password("password")
+					.userName("name")
+					.phone("010-1111-2222")
+					.status("ING")
+					.emailAuthKey("auth-key")
+					.admin(false)
+					.createdDt(LocalDateTime.now().minusDays(2))
+					.updatedDt(LocalDateTime.now())
+					.deleteDt(null)
+					.build());
+
+		ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
+
+		//when
+		accountService.changeAccountInfo(ChangeAccountDto.Request
+										.builder()
+										.areaId(200L)
+										.userName("name")
+										.phone("010-1111-2222")
+										.build());
+
+		//then
+		verify(accountRepository, times(1)).save(captor.capture());
+		assertEquals(captor.getValue().getUserId(), 3L);
+	}
+
+	@Test
+	void test() throws Exception{
 		//given
 		//when
 		//then

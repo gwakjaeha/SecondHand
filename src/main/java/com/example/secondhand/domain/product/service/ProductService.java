@@ -69,7 +69,6 @@ public class ProductService {
 	@Value("${popularProductCriterion}")
 	private String POPULAR_PRODUCT_CRITERION;
 
-
 	//키워드가 입력된 경우, (지역, 카테고리, 키워드)로 검색을 진행하고,
 	//키워드가 입력되지 않은 경우, (지역, 카테고리)로만 검색을 진행함.
 	//검색을 하면 내 읍면동과 같은 시군구에 속하는 모든 읍면동을 근처 동네로 설정하여 해당 근처 동네들에서 판매되는 상품들을 모두 가져옴.
@@ -195,7 +194,7 @@ public class ProductService {
 				.productId(request.getProductId())
 				.build());
 
-		//redis에 각 상품의 관심도를 카운트하여 저장.
+		//redis에 각 상품의 관심도를 카운트하여 HashMap 형태로 저장.
 		if(redisDao.getValuesForHash(INTEREST_DEGREE_PREFIX) != null){
 			Map<String,String> interestDegreeMap = redisDao.getValuesForHash(INTEREST_DEGREE_PREFIX);
 			Long interestDegree = 0L;
@@ -228,7 +227,7 @@ public class ProductService {
 		interestProductRepository.deleteByInterestProductIdAndUserId(request.getInterestProductId(), tokenInfo.getUserId());
 	}
 
-	//주기적으로 관심정도가 높은 인기 상품 목록을 redis 에 따로 저장해놓음.
+	//주기적으로 관심정도가 높은 인기 상품 목록을 redis set 형태로 따로 저장해놓음.
 	@Transactional
 	@Scheduled(cron = "* 0/10 * * * *") //10분 간격으로 실행
 	public void savePopularProductList(){
