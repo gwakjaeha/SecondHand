@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface InterestProductRepository extends JpaRepository<InterestProduct, Long> {
 	Page<InterestProduct> findByUserId(Long userId, Pageable pageable);
 	void deleteByInterestProductIdAndUserId(Long interestProductId, Long userId);
+	Long countByProductId(Long productId);
 }

@@ -7,6 +7,8 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +24,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @SuperBuilder
 @Entity
 @EntityListeners(AuditingEntityListener.class)
+@Table(
+	uniqueConstraints={
+		@UniqueConstraint(
+			name="productId_userId_unique",
+			columnNames={"productId", "userId"}
+		)
+	}
+)
 public class InterestProduct {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

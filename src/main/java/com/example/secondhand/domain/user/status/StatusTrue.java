@@ -26,7 +26,8 @@ public enum StatusTrue {
     DELETE_INTEREST_PRODUCT_INFO_TRUE("DELETE_INTEREST_PRODUCT_INFO_TRUE", "관심 상품 삭제 성공"),
     UPDATE_PRODUCT_INFO_TRUE("UPDATE_PRODUCT_INFO_TRUE", "상품 정보 수정 성공"),
     DELETE_PRODUCT_INFO_TRUE("DELETE_PRODUCT_INFO_TRUE", "상품 정보 삭제 성공"),
-    SAVE_PRODUCT_DOCUMENT_TRUE("SAVE_PRODUCT_DOCUMENT_TRUE", "Elasticsearch 에 데이터 저장 성공");
+    SAVE_PRODUCT_DOCUMENT_TRUE("SAVE_PRODUCT_DOCUMENT_TRUE", "Elasticsearch 에 데이터 저장 성공"),
+    READ_POPULAR_PRODUCT_INFO_TRUE("READ_POPULAR_PRODUCT_INFO_TRUE", "인기 상품 읽기 성공");
 
     private final String status;
     private final String statusMessage;

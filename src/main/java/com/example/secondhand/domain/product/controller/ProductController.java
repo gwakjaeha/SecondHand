@@ -1,7 +1,6 @@
 package com.example.secondhand.domain.product.controller;
 
 import static com.example.secondhand.domain.user.status.StatusTrue.*;
-import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_UUID;
 
 import com.example.secondhand.domain.product.dto.AddInterestProductDto;
 import com.example.secondhand.domain.product.dto.AddProductDto;
@@ -9,6 +8,7 @@ import com.example.secondhand.domain.product.dto.DeleteInterestProductDto;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
 import com.example.secondhand.domain.product.dto.ReadInterestProductListDto;
 import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
+import com.example.secondhand.domain.product.dto.ReadPopularProductListDto;
 import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
 import com.example.secondhand.domain.product.entity.InterestProduct;
@@ -16,7 +16,6 @@ import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.entity.ProductDocument;
 import com.example.secondhand.domain.product.service.ProductService;
 import com.example.secondhand.global.dto.ApiResponse;
-import com.example.secondhand.global.exception.CustomException;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -55,14 +54,14 @@ public class ProductController {
 	@PutMapping(value = "/product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> updateProduct(
 		@Valid @RequestPart UpdateProductDto.Request request, @RequestPart(required = false) MultipartFile imgFile){
-		productService.updateProduct(request, imgFile);
+		productService.updateMySellingProduct(request, imgFile);
 		return ApiResponse.success(UPDATE_PRODUCT_INFO_TRUE);
 	}
 
-	@DeleteMapping(value = "/product")
+	@DeleteMapping(value = "/my-product")
 	public ApiResponse<String> deleteProduct(
 		@Valid @RequestBody DeleteProductDto.Request request){
-		productService.deleteProduct(request);
+		productService.deleteMySellingProduct(request);
 		return ApiResponse.success(DELETE_PRODUCT_INFO_TRUE);
 	}
 
@@ -92,5 +91,12 @@ public class ProductController {
 		@Valid @RequestBody DeleteInterestProductDto.Request request){
 		productService.deleteInterestProduct(request);
 		return ApiResponse.success(DELETE_INTEREST_PRODUCT_INFO_TRUE);
+	}
+
+	@GetMapping("/popular-product")
+	public ApiResponse<Page<Product>> readPopularProduct
+		(@Valid @RequestBody ReadPopularProductListDto.Request request){
+		Page<Product> response = productService.readPopularProductList(request);
+		return ApiResponse.success(READ_POPULAR_PRODUCT_INFO_TRUE, response);
 	}
 }
