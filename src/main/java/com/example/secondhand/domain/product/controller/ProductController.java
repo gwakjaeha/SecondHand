@@ -16,6 +16,7 @@ import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.entity.ProductDocument;
 import com.example.secondhand.domain.product.service.ProductService;
 import com.example.secondhand.global.dto.ApiResponse;
+import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,6 +38,7 @@ public class ProductController {
 
 	private final ProductService productService;
 
+	@ApiOperation(value = "중고 물품을 검색합니다.")
 	@GetMapping("/product")
 	public ApiResponse<Page<ProductDocument>> readProduct(
 		@Valid @RequestBody ReadProductListDto.Request request){
@@ -44,6 +46,7 @@ public class ProductController {
 			return ApiResponse.success(READ_PRODUCT_INFO_TRUE,response);
 	}
 
+	@ApiOperation(value = "중고 물품을 올립니다.")
 	@PostMapping(value = "/product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> addProduct(
 		@Valid @RequestPart AddProductDto.Request request, @RequestPart(required = false) MultipartFile imgFile){
@@ -51,6 +54,7 @@ public class ProductController {
 		return ApiResponse.success(ADD_PRODUCT_INFO_TRUE);
 	}
 
+	@ApiOperation(value = "내가 올린 중고 물품 정보를 수정합니다.")
 	@PutMapping(value = "/my-product", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> updateProduct(
 		@Valid @RequestPart UpdateProductDto.Request request, @RequestPart(required = false) MultipartFile imgFile){
@@ -58,6 +62,7 @@ public class ProductController {
 		return ApiResponse.success(UPDATE_PRODUCT_INFO_TRUE);
 	}
 
+	@ApiOperation(value = "내가 올린 중고 물품을 삭제합니다.")
 	@DeleteMapping(value = "/my-product")
 	public ApiResponse<String> deleteProduct(
 		@Valid @RequestBody DeleteProductDto.Request request){
@@ -65,6 +70,7 @@ public class ProductController {
 		return ApiResponse.success(DELETE_PRODUCT_INFO_TRUE);
 	}
 
+	@ApiOperation(value = "내가 올린 중고 물품 목록을 조회합니다.")
 	@GetMapping("/my-product")
 	public ApiResponse<Page<Product>> readMySellingProduct
 		(@Valid @RequestBody ReadMySellingProductListDto.Request request){
@@ -72,6 +78,7 @@ public class ProductController {
 		return ApiResponse.success(READ_MY_SELLING_PRODUCT_INFO_TRUE, response);
 	}
 
+	@ApiOperation(value = "관심 상품으로 지정합니다.")
 	@PostMapping(value = "/interest-product")
 	public ApiResponse<String> addInterestProduct(
 		@Valid @RequestBody AddInterestProductDto.Request request){
@@ -79,6 +86,7 @@ public class ProductController {
 		return ApiResponse.success(ADD_INTEREST_PRODUCT_INFO_TRUE);
 	}
 
+	@ApiOperation(value = "내 관심 상품 목록을 조회합니다.")
 	@GetMapping(value = "/interest-product")
 	public ApiResponse<Page<InterestProduct>> readInterestProduct(
 		@Valid @RequestBody ReadInterestProductListDto.Request request){
@@ -86,6 +94,7 @@ public class ProductController {
 		return ApiResponse.success(READ_INTEREST_PRODUCT_INFO_TRUE, response);
 	}
 
+	@ApiOperation(value = "관심 상품을 취소합니다.")
 	@DeleteMapping(value = "/interest-product")
 	public ApiResponse<Page<InterestProduct>> deleteInterestProduct(
 		@Valid @RequestBody DeleteInterestProductDto.Request request){
@@ -93,6 +102,7 @@ public class ProductController {
 		return ApiResponse.success(DELETE_INTEREST_PRODUCT_INFO_TRUE);
 	}
 
+	@ApiOperation(value = "인기 물품을 조회합니다.")
 	@GetMapping("/popular-product")
 	public ApiResponse<Page<Product>> readPopularProduct
 		(@Valid @RequestBody ReadPopularProductListDto.Request request){
