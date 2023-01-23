@@ -11,6 +11,15 @@
 ## ERD
 <img src="./img/ERD.png">
 
+## 사용 기술스택
+- 프레임워크: SpringBoot, Spring Security
+- 검색엔진: Elastic search
+- 테스트: JUnit5, Mockito
+- 데이터베이스: mariaDB, JPA, redis
+- 빌드관리: Gradle
+- 형상관리: Git, Github
+- API document: Swagger
+
 ## 프로젝트 기능
 
 **회원가입**
