@@ -207,8 +207,11 @@ public class UserService {
 
 		String uuid = UUID.randomUUID().toString();
 
+		Area area = areaRepository.findById(request.getAreaId())
+			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+
 		User savedUser = userRepository.save(User.builder()
-			.id(request.getAreaId())
+			.area(area)
 			.email(request.getEmail())
 			.password(passwordEncoder.encode(request.getPassword()))
 			.userName(request.getUserName())
