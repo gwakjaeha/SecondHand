@@ -1,4 +1,4 @@
-package com.example.secondhand.global.config.security;
+package com.example.secondhand.global.config.jpa.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

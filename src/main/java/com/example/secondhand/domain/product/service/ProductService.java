@@ -2,6 +2,8 @@ package com.example.secondhand.domain.product.service;
 
 import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
+import com.example.secondhand.domain.catetory.entity.Category;
+import com.example.secondhand.domain.catetory.repository.CategoryRepository;
 import com.example.secondhand.domain.product.dto.AddInterestProductDto;
 import com.example.secondhand.domain.product.dto.AddProductDto;
 import com.example.secondhand.domain.product.dto.DeleteInterestProductDto;
@@ -11,7 +13,6 @@ import com.example.secondhand.domain.product.dto.ReadPopularProductListDto;
 import com.example.secondhand.domain.product.entity.Area;
 import com.example.secondhand.domain.product.entity.InterestProduct;
 import com.example.secondhand.domain.product.entity.Product;
-import com.example.secondhand.domain.product.dto.AddProductDto.Request;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
 import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
@@ -21,7 +22,7 @@ import com.example.secondhand.domain.product.repository.InterestProductRepositor
 import com.example.secondhand.domain.product.repository.ProductRepository;
 import com.example.secondhand.domain.product.repository.ProductSearchRepository;
 import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
-import com.example.secondhand.domain.user.service.AccountService;
+import com.example.secondhand.domain.user.service.UserService;
 import com.example.secondhand.global.config.redis.RedisDao;
 import com.example.secondhand.global.exception.CustomException;
 import java.io.File;
@@ -36,7 +37,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -55,7 +55,8 @@ public class ProductService {
 	private final InterestProductRepository interestProductRepository;
 	private final ProductSearchRepository productSearchRepository;
 	private final AreaRepository areaRepository;
-	private final AccountService accountService;
+	private final CategoryRepository categoryRepository;
+	private final UserService userService;
 	private final RedisDao redisDao;
 	@Value("${baseLocalPath}")
 	private String baseLocalPath;
@@ -86,7 +87,7 @@ public class ProductService {
 		Area area = areaRepository.findById(request.getAreaId()).get();
 		//(sido, sigungu) 칼럼을 index로 설정하여, 조회 속도가 빠름.
 		List<Area> areaList = areaRepository.findBySidoAndSigungu(area.getSido(), area.getSigungu());
-		List<Long> areaIdList = areaList.stream().map(Area::getAreaId).collect(Collectors.toList());
+		List<Long> areaIdList = areaList.stream().map(Area::getId).collect(Collectors.toList());
 
 		//Elasticsearch 에서 Nori 형태소 분석기를 활용하여 키워드 검색을 수행함.
 		if(request.getSearchWord() == null){
@@ -104,12 +105,19 @@ public class ProductService {
 
 	@Transactional
 	public void addProduct(AddProductDto.Request request, MultipartFile imgFile) {
-		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
 		String imgFilePath = getSavedImageFilePath(imgFile);
+
+		Area area = areaRepository.findById(tokenInfo.getAreaId())
+			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+
+		Category category = categoryRepository.findById(request.getCategoryId())
+			.orElseThrow(() -> new CustomException(NOT_FOUND_CATEGORY));
+
 		Product product = Product.builder()
-			.userId(tokenInfo.getUserId())
-			.areaId(tokenInfo.getAreaId())
-			.categoryId(request.getCategoryId())
+			.id(tokenInfo.getUserId())
+			.area(area)
+			.category(category)
 			.title(request.getTitle())
 			.content(request.getContent())
 			.imagePath(imgFilePath)
@@ -132,10 +140,10 @@ public class ProductService {
 		String imgFilePath = getSavedImageFilePath(imgFile);
 		productRepository.save(
 			Product.builder()
-				.productId(request.getProductId())
-				.userId(product.getUserId())
-				.areaId(product.getAreaId())
-				.categoryId(request.getCategoryId())
+				.id(request.getProductId())
+				.user(product.getUser())
+				.area(product.getArea())
+				.category(product.getCategory())
 				.title(request.getTitle())
 				.content(request.getContent())
 				.imagePath(imgFilePath)
@@ -157,17 +165,21 @@ public class ProductService {
 	public Page<Product> readMySellingProductList(
 		ReadMySellingProductListDto.Request request) {
 		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
-		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
 		return productRepository.findByUserIdAndDeleteDtIsNull(tokenInfo.getUserId(), pageable);
 	}
 
 	@Transactional
 	public void addInterestProduct(AddInterestProductDto.Request request) {
-		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
+
+		Product product = productRepository.findById(request.getProductId())
+			.orElseThrow(() -> new CustomException(NOT_EXIST_PRODUCT));
+
 		interestProductRepository.save(
 			InterestProduct.builder()
-				.userId(tokenInfo.getUserId())
-				.productId(request.getProductId())
+				.id(tokenInfo.getUserId())
+				.product(product)
 				.build());
 
 		//redis에 각 상품의 관심도를 카운트하여 HashMap 형태로 저장.
@@ -193,14 +205,14 @@ public class ProductService {
 	@Transactional
 	public Page<InterestProduct> readInterestProduct(ReadInterestProductListDto.Request request) {
 		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
-		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
+		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
 		return interestProductRepository.findByUserId(tokenInfo.getUserId(), pageable);
 	}
 
 	@Transactional
 	public void deleteInterestProduct(DeleteInterestProductDto.Request request) {
-		TokenInfoResponseDto tokenInfo = accountService.getTokenInfo();
-		interestProductRepository.deleteByInterestProductIdAndUserId(request.getInterestProductId(), tokenInfo.getUserId());
+		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
+		interestProductRepository.deleteByIdAndUserId(request.getInterestProductId(), tokenInfo.getUserId());
 	}
 
 	//주기적으로 관심정도가 높은 인기 상품 목록을 redis set 형태로 따로 저장해놓음.
@@ -221,7 +233,7 @@ public class ProductService {
 		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
 		Set<Long> set = redisDao.getValuesForSet(POPULAR_PRODUCT_LIST_PREFIX).stream().map(Long::parseLong).collect(
 			Collectors.toSet());
-		return productRepository.findByProductIdIsIn(set, pageable);
+		return productRepository.findByIdIsIn(set, pageable);
 	}
 
 	private String getSavedImageFilePath(MultipartFile imgFile){

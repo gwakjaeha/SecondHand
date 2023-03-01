@@ -1,5 +1,5 @@
 
-### create account
+### create user
 POST http://localhost:8080/auth/register
 Content-Type: application/json
 
@@ -24,12 +24,12 @@ Content-Type: application/json
   "password": "123456"
 }
 
-### read account info
+### read user info
 GET http://localhost:8080/auth/
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjczMzUzMzg2fQ.Nx_sAXeKApF47-emC00xTrvTNVBfKUfNOvFTNll0U1GKHas44LV3aNdCa7LUVLnWHMFK4RHYnIQIp84i7AT8HQ
 
-### change account info
+### change user info
 PATCH http://localhost:8080/auth/
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjczMzQ5ODY1fQ.XQ-8bJinjs7MPn8cYZK4TbsTG6C6ltwZRYrwzpNx2WQhAooUMWZJLotFHPI2dUGVjLguW4IxR266q8Q20eHJzA
@@ -69,7 +69,7 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb
   "accessToken": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc0MjMyNTEzfQ.vm4Rqr-vK1uZxUpeV8kgLjug-bM2NT3h1ZfNKq-j7OcBKRfzjVi-gh0mJOa27tB9tFu9OsynXdSWagcNrDUAvw"
 }
 
-### delete account
+### delete user
 DELETE http://localhost:8080/auth/
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc0MjE4NzYzfQ.ma8TYuoOFOM5h_M7a40GjowSih3oTCMlY_YthOjLoQtjPaX29Lf60EvKJ4F0nYI7_2CX8KgzNOaNL91GXtuHKA

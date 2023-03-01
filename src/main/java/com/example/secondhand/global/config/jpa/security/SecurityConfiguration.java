@@ -1,4 +1,4 @@
-package com.example.secondhand.global.config.security;
+package com.example.secondhand.global.config.jpa.security;
 
 import com.example.secondhand.global.config.jwt.JwtAccessDeniedHandler;
 import com.example.secondhand.global.config.jwt.JwtAuthenticationEntryPoint;

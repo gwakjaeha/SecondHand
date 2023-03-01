@@ -1,20 +1,35 @@
 package com.example.secondhand.domain.user.dto;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public class LogoutAccountDto {
+public class CreateUserDto {
 
 	@Getter
+	@Setter
 	@AllArgsConstructor
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	@Builder
 	public static class Request {
-		@NotEmpty
-		private String accessToken;
+		@NotNull
+		private Long areaId;
+
+		@NotNull
+		private String email;
+
+		@NotNull
+		private String password;
+
+		@NotNull
+		private String userName;
+
+		@NotNull
+		private String phone;
+
 	}
 }
