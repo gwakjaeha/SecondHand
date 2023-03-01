@@ -37,9 +37,9 @@ public class TokenInfoResponseDto {
             .status(user.getStatus())
             .emailAuthKey(user.getEmailAuthKey())
             .admin(user.isAdmin())
-            .createDt(user.getCreatedDt())
-            .updateDt(user.getUpdatedDt())
-            .deleteDt(user.getDeleteDt())
+            .createDt(user.getCreatedAt())
+            .updateDt(user.getUpdatedAt())
+            .deleteDt(user.getDeleteAt())
             .build();
     }
 }

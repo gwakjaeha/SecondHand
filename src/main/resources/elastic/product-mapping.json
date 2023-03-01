@@ -19,7 +19,7 @@
       "analyzer" : "my_analyzer"
     },
     "transactionStatus" : {"type" : "boolean"},
-    "createdDt" : {"type" : "date"},
-    "deletedDt" : {"type" : "date"}
+    "createdAt" : {"type" : "date"},
+    "deletedAt" : {"type" : "date"}
   }
 }

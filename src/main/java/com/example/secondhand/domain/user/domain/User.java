@@ -50,7 +50,7 @@ public class User extends BaseEntity implements UserStatusCode {
 	private String emailAuthKey;
 	private boolean admin;
 
-	private LocalDateTime deleteDt;
+	private LocalDateTime deleteAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "area_id")

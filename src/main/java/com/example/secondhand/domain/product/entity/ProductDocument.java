@@ -38,9 +38,9 @@ public class ProductDocument{
 	private String transactionPlace;
 	private boolean transactionStatus;
 	@Field(type = FieldType.Date, format = {date_hour_minute_second_millis, epoch_millis})
-	private LocalDateTime createdDt;
+	private LocalDateTime createdAt;
 	@Field(type = FieldType.Date, format = {date_hour_minute_second_millis, epoch_millis})
-	private LocalDateTime deletedDt;
+	private LocalDateTime deletedAt;
 
 	public static ProductDocument from(Product product){
 		return ProductDocument.builder()
@@ -54,8 +54,8 @@ public class ProductDocument{
 			.price(product.getPrice())
 			.transactionPlace(product.getTransactionPlace())
 			.transactionStatus(product.isTransactionStatus())
-			.createdDt(product.getCreatedDt())
-			.deletedDt(product.getDeleteDt())
+			.createdAt(product.getCreatedAt())
+			.deletedAt(product.getDeleteAt())
 			.build();
 	}
 }

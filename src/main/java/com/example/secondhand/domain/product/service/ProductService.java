@@ -141,14 +141,14 @@ public class ProductService {
 				.price(request.getPrice())
 				.transactionPlace(request.getTransactionPlace())
 				.transactionStatus(request.isTransactionStatus())
-				.createdDt(product.getCreatedDt())
+				.createdAt(product.getCreatedAt())
 				.build());
 	}
 
 	@Transactional
 	public void deleteProduct(DeleteProductDto.Request request) {
 		Product product = productRepository.findById(request.getProductId()).get();
-		product.setDeleteDt(LocalDateTime.now());
+		product.setDeleteAt(LocalDateTime.now());
 		productRepository.save(product);
 	}
 
