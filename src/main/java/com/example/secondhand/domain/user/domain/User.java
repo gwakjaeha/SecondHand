@@ -45,6 +45,7 @@ public class User extends BaseEntity implements UserStatusCode {
 	private String userName;
 	@Column(unique = true)
 	private String phone;
+	private boolean isAdmin;
 	private String status;
 	@Column(unique = true)
 	private String emailAuthKey;
