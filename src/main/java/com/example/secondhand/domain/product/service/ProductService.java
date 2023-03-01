@@ -157,7 +157,7 @@ public class ProductService {
 		ReadMySellingProductListDto.Request request) {
 		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
 		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
-		return productRepository.findByUserIdAndDeleteDtIsNull(tokenInfo.getUserId(), pageable);
+		return productRepository.findByUserIdAndDeleteAtIsNull(tokenInfo.getUserId(), pageable);
 	}
 
 

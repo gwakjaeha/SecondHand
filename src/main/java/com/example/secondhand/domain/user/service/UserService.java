@@ -101,7 +101,7 @@ public class UserService {
 				.status(tokenInfo.getStatus())
 				.emailAuthKey(tokenInfo.getEmailAuthKey())
 				.admin(tokenInfo.isAdmin())
-				.createdAt(tokenInfo.getCreateDt())
+				.createdAt(tokenInfo.getCreateAt())
 				.updatedAt(LocalDateTime.now())
 				.build()
 		);
@@ -126,7 +126,7 @@ public class UserService {
 				.status(tokenInfo.getStatus())
 				.emailAuthKey(tokenInfo.getEmailAuthKey())
 				.admin(tokenInfo.isAdmin())
-				.createdAt(tokenInfo.getCreateDt())
+				.createdAt(tokenInfo.getCreateAt())
 				.updatedAt(LocalDateTime.now())
 				.build()
 		);
@@ -151,7 +151,7 @@ public class UserService {
 				.status(accountInfo.getStatus())
 				.emailAuthKey(accountInfo.getEmailAuthKey())
 				.admin(accountInfo.isAdmin())
-				.createdAt(accountInfo.getCreateDt())
+				.createdAt(accountInfo.getCreateAt())
 				.updatedAt(LocalDateTime.now())
 				.build()
 		);
@@ -182,9 +182,9 @@ public class UserService {
 				.status(tokenInfo.getStatus())
 				.emailAuthKey(tokenInfo.getEmailAuthKey())
 				.admin(tokenInfo.isAdmin())
-				.createdAt(tokenInfo.getCreateDt())
-				.updatedAt(tokenInfo.getUpdateDt())
-				.deleteDt(LocalDateTime.now())
+				.createdAt(tokenInfo.getCreateAt())
+				.updatedAt(tokenInfo.getUpdateAt())
+				.deleteAt(LocalDateTime.now())
 				.build()
 		);
 	}
