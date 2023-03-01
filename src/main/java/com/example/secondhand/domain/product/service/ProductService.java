@@ -141,14 +141,14 @@ public class ProductService {
 				.price(request.getPrice())
 				.transactionPlace(request.getTransactionPlace())
 				.transactionStatus(request.isTransactionStatus())
-				.createdDt(product.getCreatedDt())
+				.createdAt(product.getCreatedAt())
 				.build());
 	}
 
 	@Transactional
 	public void deleteProduct(DeleteProductDto.Request request) {
 		Product product = productRepository.findById(request.getProductId()).get();
-		product.setDeleteDt(LocalDateTime.now());
+		product.setDeleteAt(LocalDateTime.now());
 		productRepository.save(product);
 	}
 
@@ -157,7 +157,7 @@ public class ProductService {
 		ReadMySellingProductListDto.Request request) {
 		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
 		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
-		return productRepository.findByUserIdAndDeleteDtIsNull(tokenInfo.getUserId(), pageable);
+		return productRepository.findByUserIdAndDeleteAtIsNull(tokenInfo.getUserId(), pageable);
 	}
 
 

@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-	Page<Product> findByUserIdAndDeleteDtIsNull(Long userId, Pageable pageable);
+	Page<Product> findByUserIdAndDeleteAtIsNull(Long userId, Pageable pageable);
 	Page<Product> findByIdIsIn(Set<Long> set, Pageable pageable);
 }

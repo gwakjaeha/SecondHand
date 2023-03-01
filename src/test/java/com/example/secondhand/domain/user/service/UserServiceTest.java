@@ -309,8 +309,8 @@ class UserServiceTest {
 					.status("ING")
 					.emailAuthKey("auth-key")
 					.admin(false)
-					.createdDt(LocalDateTime.now().minusDays(2))
-					.updatedDt(LocalDateTime.now())
+					.createdAt(LocalDateTime.now().minusDays(2))
+					.updatedAt(LocalDateTime.now())
 					.deleteDt(null)
 					.build()));
 
@@ -350,8 +350,8 @@ class UserServiceTest {
 					.status("ING")
 					.emailAuthKey("auth-key")
 					.admin(false)
-					.createdDt(LocalDateTime.now().minusDays(2))
-					.updatedDt(LocalDateTime.now())
+					.createdAt(LocalDateTime.now().minusDays(2))
+					.updatedAt(LocalDateTime.now())
 					.deleteDt(null)
 					.build()));
 
@@ -369,8 +369,8 @@ class UserServiceTest {
 					.status("ING")
 					.emailAuthKey("auth-key")
 					.admin(false)
-					.createdDt(LocalDateTime.now().minusDays(2))
-					.updatedDt(LocalDateTime.now())
+					.createdAt(LocalDateTime.now().minusDays(2))
+					.updatedAt(LocalDateTime.now())
 					.deleteDt(null)
 					.build());
 
@@ -407,8 +407,8 @@ class UserServiceTest {
 					.status("ING")
 					.emailAuthKey("auth-key")
 					.admin(false)
-					.createdDt(LocalDateTime.now().minusDays(2))
-					.updatedDt(LocalDateTime.now())
+					.createdAt(LocalDateTime.now().minusDays(2))
+					.updatedAt(LocalDateTime.now())
 					.deleteDt(null)
 					.build()));
 
@@ -457,8 +457,8 @@ class UserServiceTest {
 					.status("ING")
 					.emailAuthKey("auth-key")
 					.admin(false)
-					.createdDt(LocalDateTime.now().minusDays(2))
-					.updatedDt(LocalDateTime.now())
+					.createdAt(LocalDateTime.now().minusDays(2))
+					.updatedAt(LocalDateTime.now())
 					.deleteDt(null)
 					.build()));
 
@@ -504,8 +504,8 @@ class UserServiceTest {
 					.status("ING")
 					.emailAuthKey("auth-key")
 					.admin(false)
-					.createdDt(LocalDateTime.now().minusDays(2))
-					.updatedDt(LocalDateTime.now())
+					.createdAt(LocalDateTime.now().minusDays(2))
+					.updatedAt(LocalDateTime.now())
 					.deleteDt(null)
 					.build()));
 
@@ -529,7 +529,7 @@ class UserServiceTest {
 
 		//then
 		verify(userRepository, times(1)).save(captor.capture());
-		assertNotNull(captor.getValue().getDeleteDt());
+		assertNotNull(captor.getValue().getDeleteAt());
 	}
 
 	@Test

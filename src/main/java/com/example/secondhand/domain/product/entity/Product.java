@@ -45,7 +45,7 @@ public class Product extends BaseEntity {
 	private String transactionPlace;
 	private boolean transactionStatus;
 
-	private LocalDateTime deleteDt;
+	private LocalDateTime deleteAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")

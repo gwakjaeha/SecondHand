@@ -22,9 +22,9 @@ public class TokenInfoResponseDto {
     private String status;
     private String emailAuthKey;
     private boolean admin;
-    private LocalDateTime createDt;
-    private LocalDateTime updateDt;
-    private LocalDateTime deleteDt;
+    private LocalDateTime createAt;
+    private LocalDateTime updateAt;
+    private LocalDateTime deleteAt;
 
     public static TokenInfoResponseDto Response(User user) {
         return TokenInfoResponseDto.builder()
@@ -37,9 +37,9 @@ public class TokenInfoResponseDto {
             .status(user.getStatus())
             .emailAuthKey(user.getEmailAuthKey())
             .admin(user.isAdmin())
-            .createDt(user.getCreatedDt())
-            .updateDt(user.getUpdatedDt())
-            .deleteDt(user.getDeleteDt())
+            .createAt(user.getCreatedAt())
+            .updateAt(user.getUpdatedAt())
+            .deleteAt(user.getDeleteAt())
             .build();
     }
 }
