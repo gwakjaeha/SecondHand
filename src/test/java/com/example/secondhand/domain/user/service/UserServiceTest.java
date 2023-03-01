@@ -20,8 +20,8 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.example.secondhand.domain.product.entity.Area;
-import com.example.secondhand.domain.product.repository.AreaRepository;
+import com.example.secondhand.domain.area.entity.Area;
+import com.example.secondhand.domain.area.repository.AreaRepository;
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.User;
 import com.example.secondhand.domain.user.dto.ChangeUserDto;

@@ -3,8 +3,8 @@ package com.example.secondhand.domain.user.service;
 import static com.example.secondhand.domain.user.status.AccountStatusCode.*;
 import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
-import com.example.secondhand.domain.product.entity.Area;
-import com.example.secondhand.domain.product.repository.AreaRepository;
+import com.example.secondhand.domain.area.entity.Area;
+import com.example.secondhand.domain.area.repository.AreaRepository;
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.User;
 import com.example.secondhand.domain.user.dto.*;

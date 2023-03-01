@@ -1,4 +1,4 @@
-package com.example.secondhand.domain.product.dto;
+package com.example.secondhand.domain.interest_product.dto;
 
 import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-public class DeleteInterestProductDto {
+public class AddInterestProductDto {
 
 	@Getter
 	@Setter
@@ -16,7 +16,7 @@ public class DeleteInterestProductDto {
 	public static class Request {
 
 		@NotNull
-		private Long InterestProductId;
+		private Long productId;
 
 	}
 }

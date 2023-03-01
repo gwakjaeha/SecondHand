@@ -1,6 +1,6 @@
-package com.example.secondhand.domain.product.repository;
+package com.example.secondhand.domain.area.repository;
 
-import com.example.secondhand.domain.product.entity.Area;
+import com.example.secondhand.domain.area.entity.Area;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

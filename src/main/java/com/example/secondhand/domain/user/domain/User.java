@@ -1,7 +1,7 @@
 package com.example.secondhand.domain.user.domain;
 
-import com.example.secondhand.domain.product.entity.Area;
-import com.example.secondhand.domain.product.entity.InterestProduct;
+import com.example.secondhand.domain.area.entity.Area;
+import com.example.secondhand.domain.interest_product.entity.InterestProduct;
 import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.user.status.AccountStatusCode;
 import com.example.secondhand.global.entity.BaseEntity;

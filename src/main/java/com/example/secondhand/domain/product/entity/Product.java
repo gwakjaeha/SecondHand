@@ -1,6 +1,8 @@
 package com.example.secondhand.domain.product.entity;
 
+import com.example.secondhand.domain.area.entity.Area;
 import com.example.secondhand.domain.catetory.entity.Category;
+import com.example.secondhand.domain.interest_product.entity.InterestProduct;
 import com.example.secondhand.domain.user.domain.User;
 import com.example.secondhand.global.entity.BaseEntity;
 import java.time.LocalDateTime;

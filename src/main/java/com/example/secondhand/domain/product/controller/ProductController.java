@@ -2,16 +2,11 @@ package com.example.secondhand.domain.product.controller;
 
 import static com.example.secondhand.domain.user.status.StatusTrue.*;
 
-import com.example.secondhand.domain.product.dto.AddInterestProductDto;
 import com.example.secondhand.domain.product.dto.AddProductDto;
-import com.example.secondhand.domain.product.dto.DeleteInterestProductDto;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
-import com.example.secondhand.domain.product.dto.ReadInterestProductListDto;
 import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
-import com.example.secondhand.domain.product.dto.ReadPopularProductListDto;
 import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
-import com.example.secondhand.domain.product.entity.InterestProduct;
 import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.entity.ProductDocument;
 import com.example.secondhand.domain.product.service.ProductService;
@@ -76,37 +71,5 @@ public class ProductController {
 		(@Valid @RequestBody ReadMySellingProductListDto.Request request){
 		Page<Product> response = productService.readMySellingProductList(request);
 		return ApiResponse.success(READ_MY_SELLING_PRODUCT_INFO_TRUE, response);
-	}
-
-	@ApiOperation(value = "관심 상품으로 지정합니다.")
-	@PostMapping(value = "/interest-product")
-	public ApiResponse<String> addInterestProduct(
-		@Valid @RequestBody AddInterestProductDto.Request request){
-		productService.addInterestProduct(request);
-		return ApiResponse.success(ADD_INTEREST_PRODUCT_INFO_TRUE);
-	}
-
-	@ApiOperation(value = "내 관심 상품 목록을 조회합니다.")
-	@GetMapping(value = "/interest-product")
-	public ApiResponse<Page<InterestProduct>> readInterestProduct(
-		@Valid @RequestBody ReadInterestProductListDto.Request request){
-		Page<InterestProduct> response = productService.readInterestProduct(request);
-		return ApiResponse.success(READ_INTEREST_PRODUCT_INFO_TRUE, response);
-	}
-
-	@ApiOperation(value = "관심 상품을 취소합니다.")
-	@DeleteMapping(value = "/interest-product")
-	public ApiResponse<Page<InterestProduct>> deleteInterestProduct(
-		@Valid @RequestBody DeleteInterestProductDto.Request request){
-		productService.deleteInterestProduct(request);
-		return ApiResponse.success(DELETE_INTEREST_PRODUCT_INFO_TRUE);
-	}
-
-	@ApiOperation(value = "인기 물품을 조회합니다.")
-	@GetMapping("/popular-product")
-	public ApiResponse<Page<Product>> readPopularProduct
-		(@Valid @RequestBody ReadPopularProductListDto.Request request){
-		Page<Product> response = productService.readPopularProductList(request);
-		return ApiResponse.success(READ_POPULAR_PRODUCT_INFO_TRUE, response);
 	}
 }

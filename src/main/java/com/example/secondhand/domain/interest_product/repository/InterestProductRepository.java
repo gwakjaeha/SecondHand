@@ -1,6 +1,6 @@
-package com.example.secondhand.domain.product.repository;
+package com.example.secondhand.domain.interest_product.repository;
 
-import com.example.secondhand.domain.product.entity.InterestProduct;
+import com.example.secondhand.domain.interest_product.entity.InterestProduct;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
