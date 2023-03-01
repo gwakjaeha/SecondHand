@@ -1,7 +1,6 @@
 package com.example.secondhand.global.dto;
 
-import com.example.secondhand.domain.user.status.StatusTrue;
-import com.example.secondhand.global.exception.CustomErrorCode;
+import com.example.secondhand.global.status.StatusTrue;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

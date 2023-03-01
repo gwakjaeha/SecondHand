@@ -1,9 +1,9 @@
 package com.example.secondhand.domain.interest_product.controller;
 
-import static com.example.secondhand.domain.user.status.StatusTrue.ADD_INTEREST_PRODUCT_INFO_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.DELETE_INTEREST_PRODUCT_INFO_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.READ_INTEREST_PRODUCT_INFO_TRUE;
-import static com.example.secondhand.domain.user.status.StatusTrue.READ_POPULAR_PRODUCT_INFO_TRUE;
+import static com.example.secondhand.global.status.StatusTrue.ADD_INTEREST_PRODUCT_INFO_TRUE;
+import static com.example.secondhand.global.status.StatusTrue.DELETE_INTEREST_PRODUCT_INFO_TRUE;
+import static com.example.secondhand.global.status.StatusTrue.READ_INTEREST_PRODUCT_INFO_TRUE;
+import static com.example.secondhand.global.status.StatusTrue.READ_POPULAR_PRODUCT_INFO_TRUE;
 
 import com.example.secondhand.domain.interest_product.entity.InterestProduct;
 import com.example.secondhand.domain.interest_product.service.InterestProductService;

@@ -1,6 +1,6 @@
 package com.example.secondhand.domain.user.service;
 
-import static com.example.secondhand.domain.user.status.AccountStatusCode.*;
+import static com.example.secondhand.global.status.UserStatusCode.*;
 import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
 import com.example.secondhand.domain.area.entity.Area;
@@ -67,7 +67,7 @@ public class UserService {
 	public void authEmail(String uuid) {
 		User user = userRepository.findByEmailAuthKey(uuid)
 			.orElseThrow(() -> new CustomException(NOT_EXIST_UUID));
-		user.setStatus(ACCOUNT_STATUS_ING);
+		user.setStatus(USER_STATUS_ING);
 		userRepository.save(user);
 	}
 
@@ -217,7 +217,7 @@ public class UserService {
 			.userName(request.getUserName())
 			.phone(request.getPhone())
 			.admin(false)
-			.status(ACCOUNT_STATUS_REQ)
+			.status(USER_STATUS_REQ)
 			.emailAuthKey(uuid)
 			.build());
 
@@ -252,15 +252,15 @@ public class UserService {
 			throw new CustomException(LOGIN_FALSE_NOT_CORRECT_PASSWORD);
 		}
 
-		if(user.ACCOUNT_STATUS_REQ.equals(user.getStatus())){
+		if(user.USER_STATUS_REQ.equals(user.getStatus())){
 			throw new CustomException(CustomErrorCode.REQ_EMAIL);
 		}
 
-		if(user.ACCOUNT_STATUS_STOP.equals(user.getStatus())){
+		if(user.USER_STATUS_STOP.equals(user.getStatus())){
 			throw new CustomException(CustomErrorCode.STOP_EMAIL);
 		}
 
-		if(user.ACCOUNT_STATUS_WITHDRAW.equals(user.getStatus())){
+		if(user.USER_STATUS_WITHDRAW.equals(user.getStatus())){
 			throw new CustomException(CustomErrorCode.WITHDRAW_EMAIL);
 		}
 	}

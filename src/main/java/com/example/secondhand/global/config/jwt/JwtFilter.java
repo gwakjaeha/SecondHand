@@ -1,6 +1,6 @@
 package com.example.secondhand.global.config.jwt;
 
-import com.example.secondhand.domain.user.status.AuthHeader;
+import com.example.secondhand.global.status.Header;
 import com.example.secondhand.global.config.redis.RedisDao;
 import java.io.IOException;
 import javax.servlet.FilterChain;
@@ -56,7 +56,7 @@ public class JwtFilter extends GenericFilterBean {
 
     //Request Header에서 토큰 정보를 꺼내옴.
     private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AuthHeader.AUTHORIZATION_HEADER);
+        String bearerToken = request.getHeader(Header.AUTHORIZATION_HEADER);
 
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);

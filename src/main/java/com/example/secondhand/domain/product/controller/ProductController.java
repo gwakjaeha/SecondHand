@@ -1,6 +1,6 @@
 package com.example.secondhand.domain.product.controller;
 
-import static com.example.secondhand.domain.user.status.StatusTrue.*;
+import static com.example.secondhand.global.status.StatusTrue.*;
 
 import com.example.secondhand.domain.product.dto.AddProductDto;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;

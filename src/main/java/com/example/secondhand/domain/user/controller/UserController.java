@@ -1,6 +1,6 @@
 package com.example.secondhand.domain.user.controller;
 
-import static com.example.secondhand.domain.user.status.StatusTrue.*;
+import static com.example.secondhand.global.status.StatusTrue.*;
 
 import com.example.secondhand.domain.user.dto.*;
 import com.example.secondhand.domain.user.service.UserService;
