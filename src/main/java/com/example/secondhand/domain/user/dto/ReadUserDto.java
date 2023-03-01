@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
-public class ReadAccountDto {
+public class ReadUserDto {
 
 	@NotNull
 	private Long areaId;

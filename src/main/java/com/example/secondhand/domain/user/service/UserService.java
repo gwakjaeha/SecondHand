@@ -3,11 +3,13 @@ package com.example.secondhand.domain.user.service;
 import static com.example.secondhand.domain.user.status.AccountStatusCode.*;
 import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
+import com.example.secondhand.domain.product.entity.Area;
+import com.example.secondhand.domain.product.repository.AreaRepository;
 import com.example.secondhand.domain.user.components.MailComponents;
-import com.example.secondhand.domain.user.domain.Account;
+import com.example.secondhand.domain.user.domain.User;
 import com.example.secondhand.domain.user.dto.*;
 import com.example.secondhand.domain.user.dto.ChangePasswordDto.LostRequest;
-import com.example.secondhand.domain.user.repository.AccountRepository;
+import com.example.secondhand.domain.user.repository.UserRepository;
 import com.example.secondhand.global.config.jwt.SecurityUtil;
 import com.example.secondhand.global.config.jwt.TokenProvider;
 import com.example.secondhand.global.config.redis.RedisDao;
@@ -23,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,9 +32,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AccountService {
+public class UserService {
 
-	private final AccountRepository accountRepository;
+	private final UserRepository userRepository;
+	private final AreaRepository areaRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final AuthenticationManager authenticationManager;
 
@@ -51,43 +53,47 @@ public class AccountService {
 	private String REFRESH_TOKEN_PREFIX;
 
 	@Transactional
-	public void createAccount(CreateAccountDto.Request request) {
+	public void createAccount(CreateUserDto.Request request) {
 		createAccountValidation(request);
 		sendEmailAndSaveAccount(request);
 	}
 
-	public TokenDto.Response loginAccount(LoginAccountDto.Request request) {
+	public TokenDto.Response loginAccount(LoginUserDto.Request request) {
 		loginAccountValidation(request);
 		return getAccessAndRefreshToken(request);
 	}
 
 	@Transactional
 	public void authEmail(String uuid) {
-		Account account = accountRepository.findByEmailAuthKey(uuid)
+		User user = userRepository.findByEmailAuthKey(uuid)
 			.orElseThrow(() -> new CustomException(NOT_EXIST_UUID));
-		account.setStatus(ACCOUNT_STATUS_ING);
-		accountRepository.save(account);
+		user.setStatus(ACCOUNT_STATUS_ING);
+		userRepository.save(user);
 	}
 
 	@Transactional
-	public ReadAccountDto readAccountInfo() {
-		Optional<Account> accountList = accountRepository.findById(getTokenInfo().getUserId());
-		Account account = accountList.get();
-		return ReadAccountDto.builder()
-			.areaId(account.getAreaId())
-			.email(account.getEmail())
-			.userName(account.getUserName())
-			.phone(account.getPhone())
+	public ReadUserDto readAccountInfo() {
+		Optional<User> accountList = userRepository.findById(getTokenInfo().getUserId());
+		User user = accountList.get();
+		return ReadUserDto.builder()
+			.areaId(user.getArea().getId())
+			.email(user.getEmail())
+			.userName(user.getUserName())
+			.phone(user.getPhone())
 			.build();
 	}
 
 	@Transactional
-	public void changeAccountInfo(ChangeAccountDto.Request request) {
+	public void changeAccountInfo(ChangeUserDto.Request request) {
 		TokenInfoResponseDto tokenInfo = getTokenInfo();
-		accountRepository.save(
-			Account.builder()
-				.userId(tokenInfo.getUserId())
-				.areaId(request.getAreaId())
+
+		Area area = areaRepository.findById(request.getAreaId())
+			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+
+		userRepository.save(
+			User.builder()
+				.id(tokenInfo.getUserId())
+				.area(area)
 				.email(tokenInfo.getEmail())
 				.password(tokenInfo.getPassword())
 				.userName(request.getUserName())
@@ -105,10 +111,14 @@ public class AccountService {
 	public void changePassword(ChangePasswordDto.Request request) {
 		TokenInfoResponseDto tokenInfo = getTokenInfo();
 		changePasswordValidation(request, tokenInfo);
-		accountRepository.save(
-			Account.builder()
-				.userId(tokenInfo.getUserId())
-				.areaId(tokenInfo.getAreaId())
+
+		Area area = areaRepository.findById(tokenInfo.getAreaId())
+			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+
+		userRepository.save(
+			User.builder()
+				.id(tokenInfo.getUserId())
+				.area(area)
 				.email(tokenInfo.getEmail())
 				.password(passwordEncoder.encode(request.getNewPassword()))
 				.userName(tokenInfo.getUserName())
@@ -126,10 +136,14 @@ public class AccountService {
 	public void changeLostPassword(ChangePasswordDto.LostRequest request) {
 		TokenInfoResponseDto accountInfo = getAccountInfo(request.getEmail());
 		changeLostPasswordValidation(request, accountInfo.getPassword());
-		accountRepository.save(
-			Account.builder()
-				.userId(accountInfo.getUserId())
-				.areaId(accountInfo.getAreaId())
+
+		Area area = areaRepository.findById(accountInfo.getAreaId())
+			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+
+		userRepository.save(
+			User.builder()
+				.id(accountInfo.getUserId())
+				.area(area)
 				.email(accountInfo.getEmail())
 				.password(passwordEncoder.encode(request.getNewPassword()))
 				.userName(accountInfo.getUserName())
@@ -144,19 +158,23 @@ public class AccountService {
 	}
 
 	@Transactional
-	public void logoutAccount(LogoutAccountDto.Request request) {
+	public void logoutAccount(LogoutUserDto.Request request) {
 		String atk = request.getAccessToken();
 		makeIneffectiveToken(atk);
 	}
 
 	@Transactional
-	public void deleteAccount(DeleteAccountDto.Request request) {
+	public void deleteAccount(DeleteUserDto.Request request) {
 		TokenInfoResponseDto tokenInfo = getTokenInfo();
 		deleteAccountValidation(request, tokenInfo);
-		accountRepository.save(
-			Account.builder()
-				.userId(tokenInfo.getUserId())
-				.areaId(tokenInfo.getAreaId())
+
+		Area area = areaRepository.findById(tokenInfo.getAreaId())
+			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+
+		userRepository.save(
+			User.builder()
+				.id(tokenInfo.getUserId())
+				.area(area)
 				.email(tokenInfo.getEmail())
 				.password(tokenInfo.getPassword())
 				.userName(tokenInfo.getUserName())
@@ -185,12 +203,15 @@ public class AccountService {
 	}
 
 	@Transactional
-	public void sendEmailAndSaveAccount(CreateAccountDto.Request request) {
+	public void sendEmailAndSaveAccount(CreateUserDto.Request request) {
 
 		String uuid = UUID.randomUUID().toString();
 
-		Account savedAccount = accountRepository.save(Account.builder()
-			.areaId(request.getAreaId())
+		Area area = areaRepository.findById(request.getAreaId())
+			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+
+		User savedUser = userRepository.save(User.builder()
+			.area(area)
 			.email(request.getEmail())
 			.password(passwordEncoder.encode(request.getPassword()))
 			.userName(request.getUserName())
@@ -204,12 +225,12 @@ public class AccountService {
 		String text = "<p>중고물품 거래 서비스 사이트 가입을 축하드립니다. </p><p>아래 링크를 클릭하셔서 가입을 완료하세요.</p>"
 			+ "<div><a target='_blank' href='" + SERVICE_URL + "/auth/auth-email?id=" + uuid + "'> 가입 완료 </a></div>";
 
-		mailComponents.sendMail(savedAccount.getEmail(), subject, text);
+		mailComponents.sendMail(savedUser.getEmail(), subject, text);
 	}
 
-	private void createAccountValidation(CreateAccountDto.Request request){
+	private void createAccountValidation(CreateUserDto.Request request){
 
-		if (accountRepository.existsByEmail(request.getEmail()))
+		if (userRepository.existsByEmail(request.getEmail()))
 			throw new CustomException(DUPLICATE_ACCOUNT);
 
 		if (!request.getEmail().contains("@"))
@@ -219,33 +240,33 @@ public class AccountService {
 			throw new CustomException(PASSWORD_SIZE_ERROR);
 	}
 
-	private void loginAccountValidation(LoginAccountDto.Request request) {
+	private void loginAccountValidation(LoginUserDto.Request request) {
 
 		if (!request.getEmail().contains("@"))
 			throw new CustomException(NOT_EMAIL_FORM);
 
-		Account account = accountRepository.findByEmail(request.getEmail())
+		User user = userRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new CustomException(LOGIN_FALSE_NOT_EXIST_EMAIL));
 
-		if (!passwordEncoder.matches(request.getPassword(), account.getPassword())) {
+		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
 			throw new CustomException(LOGIN_FALSE_NOT_CORRECT_PASSWORD);
 		}
 
-		if(account.ACCOUNT_STATUS_REQ.equals(account.getStatus())){
+		if(user.ACCOUNT_STATUS_REQ.equals(user.getStatus())){
 			throw new CustomException(CustomErrorCode.REQ_EMAIL);
 		}
 
-		if(account.ACCOUNT_STATUS_STOP.equals(account.getStatus())){
+		if(user.ACCOUNT_STATUS_STOP.equals(user.getStatus())){
 			throw new CustomException(CustomErrorCode.STOP_EMAIL);
 		}
 
-		if(account.ACCOUNT_STATUS_WITHDRAW.equals(account.getStatus())){
+		if(user.ACCOUNT_STATUS_WITHDRAW.equals(user.getStatus())){
 			throw new CustomException(CustomErrorCode.WITHDRAW_EMAIL);
 		}
 	}
 
 	private void changeLostPasswordValidation(LostRequest request, String password) {
-		accountRepository.findByEmail(request.getEmail())
+		userRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 		if (passwordEncoder.matches(request.getNewPassword(), password)) {
 			throw new CustomException(PASSWORD_IS_NOT_CHANGE);
@@ -253,20 +274,20 @@ public class AccountService {
 	}
 
 	private void changePasswordValidation(ChangePasswordDto.Request request, TokenInfoResponseDto tokenInfo) {
-		accountRepository.findByEmail(request.getEmail())
+		userRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 		if (!passwordEncoder.matches(request.getPassword(), tokenInfo.getPassword())) {
 			throw new CustomException(PASSWORD_CHANGE_FALSE);
 		}
 	}
 
-	private void deleteAccountValidation(DeleteAccountDto.Request request, TokenInfoResponseDto tokenInfo) {
+	private void deleteAccountValidation(DeleteUserDto.Request request, TokenInfoResponseDto tokenInfo) {
 		if (!passwordEncoder.matches(request.getPassword(), tokenInfo.getPassword())) {
 			throw new CustomException(DELETE_ACCOUNT_FALSE);
 		}
 	}
 
-	private TokenDto.Response getAccessAndRefreshToken(LoginAccountDto.Request request){
+	private TokenDto.Response getAccessAndRefreshToken(LoginUserDto.Request request){
 		UsernamePasswordAuthenticationToken authenticationToken =
 			new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword());
 
@@ -288,7 +309,7 @@ public class AccountService {
 	public TokenInfoResponseDto getTokenInfo() {
 		return TokenInfoResponseDto.Response(
 			Objects.requireNonNull(SecurityUtil.getCurrentUsername()
-				.flatMap(accountRepository::findOneByEmail)
+				.flatMap(userRepository::findOneByEmail)
 				.orElse(null))
 		);
 	}
@@ -296,7 +317,7 @@ public class AccountService {
 	private TokenInfoResponseDto getAccountInfo(String email) {
 		return TokenInfoResponseDto.Response(
 			Objects.requireNonNull(Optional.of(email)
-				.flatMap(accountRepository::findOneByEmail)
+				.flatMap(userRepository::findOneByEmail)
 				.orElse(null))
 		);
 	}

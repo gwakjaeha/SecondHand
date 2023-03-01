@@ -1,6 +1,6 @@
 package com.example.secondhand.domain.user.dto;
 
-import com.example.secondhand.domain.user.domain.Account;
+import com.example.secondhand.domain.user.domain.User;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,20 +26,20 @@ public class TokenInfoResponseDto {
     private LocalDateTime updateDt;
     private LocalDateTime deleteDt;
 
-    public static TokenInfoResponseDto Response(Account account) {
+    public static TokenInfoResponseDto Response(User user) {
         return TokenInfoResponseDto.builder()
-            .userId(account.getUserId())
-            .areaId(account.getAreaId())
-            .email(account.getEmail())
-            .password(account.getPassword())
-            .userName(account.getUserName())
-            .phone(account.getPhone())
-            .status(account.getStatus())
-            .emailAuthKey(account.getEmailAuthKey())
-            .admin(account.isAdmin())
-            .createDt(account.getCreatedDt())
-            .updateDt(account.getUpdatedDt())
-            .deleteDt(account.getDeleteDt())
+            .userId(user.getId())
+            .areaId(user.getArea().getId())
+            .email(user.getEmail())
+            .password(user.getPassword())
+            .userName(user.getUserName())
+            .phone(user.getPhone())
+            .status(user.getStatus())
+            .emailAuthKey(user.getEmailAuthKey())
+            .admin(user.isAdmin())
+            .createDt(user.getCreatedDt())
+            .updateDt(user.getUpdatedDt())
+            .deleteDt(user.getDeleteDt())
             .build();
     }
 }

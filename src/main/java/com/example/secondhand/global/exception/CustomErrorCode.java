@@ -30,6 +30,8 @@ public enum CustomErrorCode {
     PASSWORD_IS_NOT_CHANGE("현재 사용중인 비밀번호로는 변경이 불가합니다."),
     PASSWORD_CHANGE_FALSE( "현재 비밀번호가 일치하지 않습니다." ),
     NOT_FOUND_USER("해당 이메일의 유저가 존재하지 않습니다"),
+    NOT_FOUND_AREA("해당 지역이 존재하지 않습니다"),
+    NOT_FOUND_CATEGORY("해당 카테고리가 존재하지 않습니다"),
 
     //회원탈퇴
     DELETE_ACCOUNT_FALSE("비밀번호 불일치로 회원탈퇴를 할 수 없습니다."),

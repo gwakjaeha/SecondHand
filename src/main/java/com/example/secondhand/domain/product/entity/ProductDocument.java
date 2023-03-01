@@ -4,7 +4,6 @@ import static org.springframework.data.elasticsearch.annotations.DateFormat.date
 import static org.springframework.data.elasticsearch.annotations.DateFormat.epoch_millis;
 
 import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,10 +44,10 @@ public class ProductDocument{
 
 	public static ProductDocument from(Product product){
 		return ProductDocument.builder()
-			.productId(product.getProductId())
-			.userId(product.getUserId())
-			.areaId(product.getAreaId())
-			.categoryId(product.getCategoryId())
+			.productId(product.getId())
+			.userId(product.getUser().getId())
+			.areaId(product.getArea().getId())
+			.categoryId(product.getCategory().getId())
 			.title(product.getTitle())
 			.content(product.getContent())
 			.imagePath(product.getImagePath())

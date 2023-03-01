@@ -1,5 +1,6 @@
-package com.example.secondhand.domain.product.entity;
+package com.example.secondhand.domain.catetory.entity;
 
+import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.global.entity.BaseEntity;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,20 +27,16 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Entity
 @ToString
-@Table(name = "area")
-public class Area extends BaseEntity {
+@Table(name = "category")
+public class Category extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "area_id")
+	@Column(name = "category_id")
 	private Long id;
 
-	private String sido;
-	private String sigungu;
-	private String eupmyeondong;
-	private double lat;
-	private double lnt;
+	private String categoryName;
 
-	@OneToMany(mappedBy = "area", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
 	@ToString.Exclude
 	private List<Product> productList = new ArrayList<>();
 }

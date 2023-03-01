@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-public class CreateAccountDto {
+public class ChangeUserDto {
 
 	@Getter
 	@Setter
@@ -18,12 +18,6 @@ public class CreateAccountDto {
 	public static class Request {
 		@NotNull
 		private Long areaId;
-
-		@NotNull
-		private String email;
-
-		@NotNull
-		private String password;
 
 		@NotNull
 		private String userName;

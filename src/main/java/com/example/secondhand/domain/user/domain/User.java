@@ -1,17 +1,28 @@
 package com.example.secondhand.domain.user.domain;
 
+import com.example.secondhand.domain.product.entity.Area;
+import com.example.secondhand.domain.product.entity.InterestProduct;
+import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.user.status.AccountStatusCode;
 import com.example.secondhand.global.entity.BaseEntity;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Getter
@@ -20,12 +31,14 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @Entity
-public class Account extends BaseEntity implements AccountStatusCode {
+@ToString
+@Table(name = "user")
+public class User extends BaseEntity implements AccountStatusCode {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long userId;
-	@Column(unique = true)
-	private Long areaId;
+	@Column(name = "user_id")
+	private Long id;
+
 	@Column(unique = true)
 	private String email;
 	private String password;
@@ -38,4 +51,17 @@ public class Account extends BaseEntity implements AccountStatusCode {
 	private boolean admin;
 
 	private LocalDateTime deleteDt;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "area_id")
+	@ToString.Exclude
+	private Area area;
+
+	@OneToMany(mappedBy = "user")
+	@ToString.Exclude
+	List<InterestProduct> interestProductList = new ArrayList<>();
+
+	@OneToMany(mappedBy = "user")
+	@ToString.Exclude
+	List<Product> productList = new ArrayList<>();
 }

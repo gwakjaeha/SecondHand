@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-public class DeleteAccountDto {
+public class DeleteUserDto {
 
 	@Getter
 	@AllArgsConstructor
