@@ -1,5 +1,6 @@
-package com.example.secondhand.domain.product.entity;
+package com.example.secondhand.domain.area.entity;
 
+import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.global.entity.BaseEntity;
 import java.util.ArrayList;
 import java.util.List;

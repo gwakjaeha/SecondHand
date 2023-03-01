@@ -1,5 +1,6 @@
-package com.example.secondhand.domain.product.entity;
+package com.example.secondhand.domain.interest_product.entity;
 
+import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.user.domain.User;
 import com.example.secondhand.global.entity.BaseEntity;
 import java.time.LocalDateTime;

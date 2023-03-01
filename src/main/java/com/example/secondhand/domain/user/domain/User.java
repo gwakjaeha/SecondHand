@@ -1,9 +1,9 @@
 package com.example.secondhand.domain.user.domain;
 
-import com.example.secondhand.domain.product.entity.Area;
-import com.example.secondhand.domain.product.entity.InterestProduct;
+import com.example.secondhand.domain.area.entity.Area;
+import com.example.secondhand.domain.interest_product.entity.InterestProduct;
 import com.example.secondhand.domain.product.entity.Product;
-import com.example.secondhand.domain.user.status.AccountStatusCode;
+import com.example.secondhand.global.status.UserStatusCode;
 import com.example.secondhand.global.entity.BaseEntity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ import lombok.experimental.SuperBuilder;
 @Entity
 @ToString
 @Table(name = "user")
-public class User extends BaseEntity implements AccountStatusCode {
+public class User extends BaseEntity implements UserStatusCode {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id")

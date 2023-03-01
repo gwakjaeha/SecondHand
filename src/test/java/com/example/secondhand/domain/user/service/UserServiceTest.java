@@ -1,7 +1,7 @@
 package com.example.secondhand.domain.user.service;
 
-import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_ING;
-import static com.example.secondhand.domain.user.status.AccountStatusCode.ACCOUNT_STATUS_REQ;
+import static com.example.secondhand.global.status.UserStatusCode.USER_STATUS_ING;
+import static com.example.secondhand.global.status.UserStatusCode.USER_STATUS_REQ;
 import static com.example.secondhand.global.exception.CustomErrorCode.DUPLICATE_ACCOUNT;
 import static com.example.secondhand.global.exception.CustomErrorCode.LOGIN_FALSE_NOT_CORRECT_PASSWORD;
 import static com.example.secondhand.global.exception.CustomErrorCode.LOGIN_FALSE_NOT_EXIST_EMAIL;
@@ -20,8 +20,8 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.example.secondhand.domain.product.entity.Area;
-import com.example.secondhand.domain.product.repository.AreaRepository;
+import com.example.secondhand.domain.area.entity.Area;
+import com.example.secondhand.domain.area.repository.AreaRepository;
 import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.User;
 import com.example.secondhand.domain.user.dto.ChangeUserDto;
@@ -92,7 +92,7 @@ class UserServiceTest {
 				.userName("name")
 				.phone("010-1111-2222")
 				.admin(false)
-				.status(ACCOUNT_STATUS_REQ)
+				.status(USER_STATUS_REQ)
 				.emailAuthKey("uuid")
 				.build());
 		willDoNothing().given(mailComponents).sendMail(anyString(), anyString(), anyString());
@@ -115,7 +115,7 @@ class UserServiceTest {
 		assertEquals("name", captor.getValue().getUserName());
 		assertEquals("010-1111-2222", captor.getValue().getPhone());
 		assertEquals(false, captor.getValue().isAdmin());
-		assertEquals(ACCOUNT_STATUS_REQ, captor.getValue().getStatus());
+		assertEquals(USER_STATUS_REQ, captor.getValue().getStatus());
 		assertNotNull(captor.getValue().getEmailAuthKey());
 	}
 
@@ -260,11 +260,11 @@ class UserServiceTest {
 		//given
 		given(userRepository.findByEmailAuthKey(anyString()))
 			.willReturn(Optional.of(User.builder()
-				.status(ACCOUNT_STATUS_ING)
+				.status(USER_STATUS_ING)
 				.build()));
 		given(userRepository.save(any()))
 			.willReturn(User.builder()
-				.status(ACCOUNT_STATUS_ING)
+				.status(USER_STATUS_ING)
 				.build());
 
 		ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
@@ -274,7 +274,7 @@ class UserServiceTest {
 
 		//then
 		verify(userRepository, times(1)).save(captor.capture());
-		assertEquals(ACCOUNT_STATUS_ING, captor.getValue().getStatus());
+		assertEquals(USER_STATUS_ING, captor.getValue().getStatus());
 	}
 
 	@Test

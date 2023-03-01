@@ -1,18 +1,22 @@
-package com.example.secondhand.domain.product.dto;
+package com.example.secondhand.domain.interest_product.dto;
 
+import javax.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-public class ReadInterestProductListDto {
+public class DeleteInterestProductDto {
 
 	@Getter
 	@Setter
 	@AllArgsConstructor
 	@NoArgsConstructor(access = AccessLevel.PROTECTED)
 	public static class Request {
-		private int page = 0;
+
+		@NotNull
+		private Long InterestProductId;
+
 	}
 }

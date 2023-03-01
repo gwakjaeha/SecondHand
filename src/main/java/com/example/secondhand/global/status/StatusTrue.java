@@ -1,4 +1,4 @@
-package com.example.secondhand.domain.user.status;
+package com.example.secondhand.global.status;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

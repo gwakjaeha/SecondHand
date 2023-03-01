@@ -4,21 +4,15 @@ import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
 import com.example.secondhand.domain.catetory.entity.Category;
 import com.example.secondhand.domain.catetory.repository.CategoryRepository;
-import com.example.secondhand.domain.product.dto.AddInterestProductDto;
 import com.example.secondhand.domain.product.dto.AddProductDto;
-import com.example.secondhand.domain.product.dto.DeleteInterestProductDto;
-import com.example.secondhand.domain.product.dto.ReadInterestProductListDto;
 import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
-import com.example.secondhand.domain.product.dto.ReadPopularProductListDto;
-import com.example.secondhand.domain.product.entity.Area;
-import com.example.secondhand.domain.product.entity.InterestProduct;
+import com.example.secondhand.domain.area.entity.Area;
 import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
 import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
 import com.example.secondhand.domain.product.entity.ProductDocument;
-import com.example.secondhand.domain.product.repository.AreaRepository;
-import com.example.secondhand.domain.product.repository.InterestProductRepository;
+import com.example.secondhand.domain.area.repository.AreaRepository;
 import com.example.secondhand.domain.product.repository.ProductRepository;
 import com.example.secondhand.domain.product.repository.ProductSearchRepository;
 import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
@@ -30,10 +24,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
@@ -52,7 +44,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProductService {
 
 	private final ProductRepository productRepository;
-	private final InterestProductRepository interestProductRepository;
 	private final ProductSearchRepository productSearchRepository;
 	private final AreaRepository areaRepository;
 	private final CategoryRepository categoryRepository;
@@ -169,51 +160,6 @@ public class ProductService {
 		return productRepository.findByUserIdAndDeleteDtIsNull(tokenInfo.getUserId(), pageable);
 	}
 
-	@Transactional
-	public void addInterestProduct(AddInterestProductDto.Request request) {
-		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
-
-		Product product = productRepository.findById(request.getProductId())
-			.orElseThrow(() -> new CustomException(NOT_EXIST_PRODUCT));
-
-		interestProductRepository.save(
-			InterestProduct.builder()
-				.id(tokenInfo.getUserId())
-				.product(product)
-				.build());
-
-		//redis에 각 상품의 관심도를 카운트하여 HashMap 형태로 저장.
-		if(redisDao.getValuesForHash(INTEREST_DEGREE_PREFIX) != null){
-			Map<String,String> interestDegreeMap = redisDao.getValuesForHash(INTEREST_DEGREE_PREFIX);
-			Long interestDegree = 0L;
-			if(interestDegreeMap.containsKey(request.getProductId().toString())){
-				interestDegree = Long.parseLong(interestDegreeMap.get(request.getProductId().toString()));
-				interestDegree++;
-			} else {
-				interestDegree = interestProductRepository.countByProductId(request.getProductId());
-			}
-			interestDegreeMap.put(request.getProductId().toString(), interestDegree.toString());
-			redisDao.setValuesForHash(INTEREST_DEGREE_PREFIX, interestDegreeMap);
-		} else {
-			Long interestDegree = interestProductRepository.countByProductId(request.getProductId());
-			Map<String,String> interestDegreeMap = new HashMap<String,String>();
-			interestDegreeMap.put(request.getProductId().toString(), interestDegree.toString());
-			redisDao.setValuesForHash(INTEREST_DEGREE_PREFIX, interestDegreeMap);
-		}
-	}
-
-	@Transactional
-	public Page<InterestProduct> readInterestProduct(ReadInterestProductListDto.Request request) {
-		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
-		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
-		return interestProductRepository.findByUserId(tokenInfo.getUserId(), pageable);
-	}
-
-	@Transactional
-	public void deleteInterestProduct(DeleteInterestProductDto.Request request) {
-		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
-		interestProductRepository.deleteByIdAndUserId(request.getInterestProductId(), tokenInfo.getUserId());
-	}
 
 	//주기적으로 관심정도가 높은 인기 상품 목록을 redis set 형태로 따로 저장해놓음.
 	@Transactional
@@ -226,14 +172,6 @@ public class ProductService {
 				redisDao.setValuesForSet(POPULAR_PRODUCT_LIST_PREFIX, key);
 			}
 		}
-	}
-
-	@Transactional
-	public Page<Product> readPopularProductList(ReadPopularProductListDto.Request request) {
-		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
-		Set<Long> set = redisDao.getValuesForSet(POPULAR_PRODUCT_LIST_PREFIX).stream().map(Long::parseLong).collect(
-			Collectors.toSet());
-		return productRepository.findByIdIsIn(set, pageable);
 	}
 
 	private String getSavedImageFilePath(MultipartFile imgFile){
