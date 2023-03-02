@@ -9,6 +9,8 @@ import io.swagger.annotations.ApiOperation;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,14 +41,18 @@ public class UserController {
 
 	@ApiOperation(value = "내 정보를 조회합니다.")
 	@GetMapping("/")
-	public ApiResponse<ReadUserDto> readAccountInfo() {
-		return ApiResponse.success(READ_ACCOUNT_INFO_TRUE, userService.readAccountInfo());
+	public ApiResponse<ReadUserDto> readAccountInfo(
+		@AuthenticationPrincipal UserDetails user
+	) {
+		return ApiResponse.success(READ_ACCOUNT_INFO_TRUE, userService.readAccountInfo(user.getUsername()));
 	}
 
 	@ApiOperation(value = "내 정보를 수정합니다.")
 	@PatchMapping("/")
-	public ApiResponse<String> changeAccountInfo(@RequestBody @Valid final ChangeUserDto.Request request){
-		userService.changeAccountInfo(request);
+	public ApiResponse<String> changeAccountInfo(
+		@AuthenticationPrincipal UserDetails user,
+		@RequestBody @Valid final ChangeUserDto.Request request){
+		userService.changeAccountInfo(request, user.getUsername());
 		return ApiResponse.success(CHANGE_ACCOUNT_INFO_TRUE);
 	}
 
@@ -59,22 +65,27 @@ public class UserController {
 
 	@ApiOperation(value = "로그인한 상태에서 비밀번호를 변경합니다.")
 	@PatchMapping("/password")
-	public ApiResponse<String> changePassword(@RequestBody @Valid ChangePasswordDto.Request request){
-		userService.changePassword(request);
+	public ApiResponse<String> changePassword(
+		@AuthenticationPrincipal UserDetails user,
+		@RequestBody @Valid ChangePasswordDto.Request request){
+		userService.changePassword(request, user.getUsername());
 		return ApiResponse.success(PASSWORD_CHANGE_TRUE);
 	}
 
 	@ApiOperation(value = "비밀번호 분실시 비밀번호를 변경합니다.")
 	@PutMapping("/password")
-	public ApiResponse<String> changeLostPassword(@RequestBody @Valid ChangePasswordDto.LostRequest request){
+	public ApiResponse<String> changeLostPassword(
+		@RequestBody @Valid ChangePasswordDto.LostRequest request){
 		userService.changeLostPassword(request);
 		return ApiResponse.success(PASSWORD_CHANGE_TRUE);
 	}
 
 	@ApiOperation(value = "회원탈퇴를 합니다.")
 	@DeleteMapping("/")
-	public ApiResponse<String> deleteAccount(@RequestBody @Valid DeleteUserDto.Request request){
-		userService.deleteAccount(request);
+	public ApiResponse<String> deleteAccount(
+		@AuthenticationPrincipal UserDetails user,
+		@RequestBody @Valid DeleteUserDto.Request request){
+		userService.deleteAccount(request, user.getUsername());
 		return ApiResponse.success(DELETE_ACCOUNT_TRUE);
 	}
 

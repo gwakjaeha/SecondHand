@@ -9,6 +9,7 @@ import com.example.secondhand.domain.user.components.MailComponents;
 import com.example.secondhand.domain.user.domain.User;
 import com.example.secondhand.domain.user.dto.*;
 import com.example.secondhand.domain.user.dto.ChangePasswordDto.LostRequest;
+import com.example.secondhand.domain.user.dto.ChangeUserDto.Request;
 import com.example.secondhand.domain.user.repository.UserRepository;
 import com.example.secondhand.global.config.jwt.SecurityUtil;
 import com.example.secondhand.global.config.jwt.TokenProvider;
@@ -72,9 +73,10 @@ public class UserService {
 	}
 
 	@Transactional
-	public ReadUserDto readAccountInfo() {
-		Optional<User> accountList = userRepository.findById(getTokenInfo().getUserId());
-		User user = accountList.get();
+	public ReadUserDto readAccountInfo(String email) {
+
+		User user = getUser(email);
+
 		return ReadUserDto.builder()
 			.areaId(user.getArea().getId())
 			.email(user.getEmail())
@@ -84,49 +86,46 @@ public class UserService {
 	}
 
 	@Transactional
-	public void changeAccountInfo(ChangeUserDto.Request request) {
-		TokenInfoResponseDto tokenInfo = getTokenInfo();
+	public void changeAccountInfo(Request request, String email) {
 
-		Area area = areaRepository.findById(request.getAreaId())
-			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+		User user = getUser(email);
 
 		userRepository.save(
 			User.builder()
-				.id(tokenInfo.getUserId())
-				.area(area)
-				.email(tokenInfo.getEmail())
-				.password(tokenInfo.getPassword())
+				.id(user.getId())
+				.area(user.getArea())
+				.email(user.getEmail())
+				.password(user.getPassword())
 				.userName(request.getUserName())
 				.phone(request.getPhone())
-				.status(tokenInfo.getStatus())
-				.emailAuthKey(tokenInfo.getEmailAuthKey())
-				.admin(tokenInfo.isAdmin())
-				.createdAt(tokenInfo.getCreateAt())
+				.status(user.getStatus())
+				.emailAuthKey(user.getEmailAuthKey())
+				.admin(user.isAdmin())
+				.createdAt(user.getCreatedAt())
 				.updatedAt(LocalDateTime.now())
 				.build()
 		);
 	}
 
 	@Transactional
-	public void changePassword(ChangePasswordDto.Request request) {
-		TokenInfoResponseDto tokenInfo = getTokenInfo();
-		changePasswordValidation(request, tokenInfo);
+	public void changePassword(ChangePasswordDto.Request request, String email) {
 
-		Area area = areaRepository.findById(tokenInfo.getAreaId())
-			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+		User user = getUser(email);
+
+		changePasswordValidation(request, user.getPassword());
 
 		userRepository.save(
 			User.builder()
-				.id(tokenInfo.getUserId())
-				.area(area)
-				.email(tokenInfo.getEmail())
+				.id(user.getId())
+				.area(user.getArea())
+				.email(user.getEmail())
 				.password(passwordEncoder.encode(request.getNewPassword()))
-				.userName(tokenInfo.getUserName())
-				.phone(tokenInfo.getPhone())
-				.status(tokenInfo.getStatus())
-				.emailAuthKey(tokenInfo.getEmailAuthKey())
-				.admin(tokenInfo.isAdmin())
-				.createdAt(tokenInfo.getCreateAt())
+				.userName(user.getUserName())
+				.phone(user.getPhone())
+				.status(user.getStatus())
+				.emailAuthKey(user.getEmailAuthKey())
+				.admin(user.isAdmin())
+				.createdAt(user.getCreatedAt())
 				.updatedAt(LocalDateTime.now())
 				.build()
 		);
@@ -164,26 +163,25 @@ public class UserService {
 	}
 
 	@Transactional
-	public void deleteAccount(DeleteUserDto.Request request) {
-		TokenInfoResponseDto tokenInfo = getTokenInfo();
-		deleteAccountValidation(request, tokenInfo);
+	public void deleteAccount(DeleteUserDto.Request request, String email) {
 
-		Area area = areaRepository.findById(tokenInfo.getAreaId())
-			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+		User user = getUser(email);
+
+		deleteAccountValidation(request, user.getPassword());
 
 		userRepository.save(
 			User.builder()
-				.id(tokenInfo.getUserId())
-				.area(area)
-				.email(tokenInfo.getEmail())
-				.password(tokenInfo.getPassword())
-				.userName(tokenInfo.getUserName())
-				.phone(tokenInfo.getPhone())
-				.status(tokenInfo.getStatus())
-				.emailAuthKey(tokenInfo.getEmailAuthKey())
-				.admin(tokenInfo.isAdmin())
-				.createdAt(tokenInfo.getCreateAt())
-				.updatedAt(tokenInfo.getUpdateAt())
+				.id(user.getId())
+				.area(user.getArea())
+				.email(user.getEmail())
+				.password(user.getPassword())
+				.userName(user.getUserName())
+				.phone(user.getPhone())
+				.status(user.getStatus())
+				.emailAuthKey(user.getEmailAuthKey())
+				.admin(user.isAdmin())
+				.createdAt(user.getCreatedAt())
+				.updatedAt(user.getUpdatedAt())
 				.deleteAt(LocalDateTime.now())
 				.build()
 		);
@@ -273,16 +271,16 @@ public class UserService {
 		}
 	}
 
-	private void changePasswordValidation(ChangePasswordDto.Request request, TokenInfoResponseDto tokenInfo) {
+	private void changePasswordValidation(ChangePasswordDto.Request request, String password) {
 		userRepository.findByEmail(request.getEmail())
 			.orElseThrow(() -> new CustomException(NOT_FOUND_USER));
-		if (!passwordEncoder.matches(request.getPassword(), tokenInfo.getPassword())) {
+		if (!passwordEncoder.matches(request.getPassword(), password)) {
 			throw new CustomException(PASSWORD_CHANGE_FALSE);
 		}
 	}
 
-	private void deleteAccountValidation(DeleteUserDto.Request request, TokenInfoResponseDto tokenInfo) {
-		if (!passwordEncoder.matches(request.getPassword(), tokenInfo.getPassword())) {
+	private void deleteAccountValidation(DeleteUserDto.Request request, String password) {
+		if (!passwordEncoder.matches(request.getPassword(), password)) {
 			throw new CustomException(DELETE_ACCOUNT_FALSE);
 		}
 	}
@@ -304,6 +302,12 @@ public class UserService {
 			.grantType("Bearer")
 			.accessToken(atk)
 			.refreshToken(rtk).build();
+	}
+
+	public User getUser(String email){
+		User user = userRepository.findByEmail(email)
+			.orElseThrow(() -> new CustomException(NOT_FOUND_USER));
+		return user;
 	}
 
 	public TokenInfoResponseDto getTokenInfo() {

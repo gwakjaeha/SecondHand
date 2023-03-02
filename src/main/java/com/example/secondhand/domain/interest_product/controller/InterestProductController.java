@@ -17,6 +17,8 @@ import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,24 +36,28 @@ public class InterestProductController {
 	@ApiOperation(value = "관심 상품으로 지정합니다.")
 	@PostMapping(value = "/interest-product")
 	public ApiResponse<String> addInterestProduct(
+		@AuthenticationPrincipal UserDetails user,
 		@Valid @RequestBody AddInterestProductDto.Request request){
-		interestProductService.addInterestProduct(request);
+		interestProductService.addInterestProduct(request, user.getUsername());
 		return ApiResponse.success(ADD_INTEREST_PRODUCT_INFO_TRUE);
 	}
 
 	@ApiOperation(value = "내 관심 상품 목록을 조회합니다.")
 	@GetMapping(value = "/interest-product")
 	public ApiResponse<Page<InterestProduct>> readInterestProduct(
+		@AuthenticationPrincipal UserDetails user,
 		@Valid @RequestBody ReadInterestProductListDto.Request request){
-		Page<InterestProduct> response = interestProductService.readInterestProduct(request);
+		Page<InterestProduct> response =
+			interestProductService.readInterestProduct(request, user.getUsername());
 		return ApiResponse.success(READ_INTEREST_PRODUCT_INFO_TRUE, response);
 	}
 
 	@ApiOperation(value = "관심 상품을 취소합니다.")
 	@DeleteMapping(value = "/interest-product")
 	public ApiResponse<Page<InterestProduct>> deleteInterestProduct(
+		@AuthenticationPrincipal UserDetails user,
 		@Valid @RequestBody DeleteInterestProductDto.Request request){
-		interestProductService.deleteInterestProduct(request);
+		interestProductService.deleteInterestProduct(request, user.getUsername());
 		return ApiResponse.success(DELETE_INTEREST_PRODUCT_INFO_TRUE);
 	}
 
