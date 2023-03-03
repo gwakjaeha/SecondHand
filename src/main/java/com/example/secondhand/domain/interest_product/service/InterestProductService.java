@@ -2,14 +2,15 @@ package com.example.secondhand.domain.interest_product.service;
 
 import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_PRODUCT;
 
+import com.example.secondhand.domain.interest_product.dto.AddInterestProductDto.Request;
 import com.example.secondhand.domain.interest_product.entity.InterestProduct;
 import com.example.secondhand.domain.interest_product.repository.InterestProductRepository;
-import com.example.secondhand.domain.interest_product.dto.AddInterestProductDto;
 import com.example.secondhand.domain.interest_product.dto.DeleteInterestProductDto;
 import com.example.secondhand.domain.interest_product.dto.ReadInterestProductListDto;
 import com.example.secondhand.domain.interest_product.dto.ReadPopularProductListDto;
 import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.repository.ProductRepository;
+import com.example.secondhand.domain.user.domain.User;
 import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
 import com.example.secondhand.domain.user.service.UserService;
 import com.example.secondhand.global.config.redis.RedisDao;
@@ -45,20 +46,21 @@ public class InterestProductService {
 	private String POPULAR_PRODUCT_CRITERION;
 
 	@Transactional
-	public void addInterestProduct(AddInterestProductDto.Request request) {
-		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
+	public void addInterestProduct(Request request, String email) {
+		User user = userService.getUser(email);
 
 		Product product = productRepository.findById(request.getProductId())
 			.orElseThrow(() -> new CustomException(NOT_EXIST_PRODUCT));
 
 		interestProductRepository.save(
 			InterestProduct.builder()
-				.id(tokenInfo.getUserId())
+				.id(user.getId())
 				.product(product)
 				.build());
 
 		//redis에 각 상품의 관심도를 카운트하여 HashMap 형태로 저장.
 		if(redisDao.getValuesForHash(INTEREST_DEGREE_PREFIX) != null){
+			//기존에 해당 상품의 관심도가 기록되어 있는 경우.
 			Map<String,String> interestDegreeMap = redisDao.getValuesForHash(INTEREST_DEGREE_PREFIX);
 			Long interestDegree = 0L;
 			if(interestDegreeMap.containsKey(request.getProductId().toString())){
@@ -70,6 +72,7 @@ public class InterestProductService {
 			interestDegreeMap.put(request.getProductId().toString(), interestDegree.toString());
 			redisDao.setValuesForHash(INTEREST_DEGREE_PREFIX, interestDegreeMap);
 		} else {
+			//기존에 해당 상품의 관심도가 기록되어 있지 않은 경우.
 			Long interestDegree = interestProductRepository.countByProductId(request.getProductId());
 			Map<String,String> interestDegreeMap = new HashMap<String,String>();
 			interestDegreeMap.put(request.getProductId().toString(), interestDegree.toString());
@@ -78,16 +81,22 @@ public class InterestProductService {
 	}
 
 	@Transactional
-	public Page<InterestProduct> readInterestProduct(ReadInterestProductListDto.Request request) {
+	public Page<InterestProduct> readInterestProduct(
+		ReadInterestProductListDto.Request request, String email) {
+
 		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
-		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
-		return interestProductRepository.findByUserId(tokenInfo.getUserId(), pageable);
+
+		User user = userService.getUser(email);
+
+		return interestProductRepository.findByUserId(user.getId(), pageable);
 	}
 
 	@Transactional
-	public void deleteInterestProduct(DeleteInterestProductDto.Request request) {
-		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
-		interestProductRepository.deleteByIdAndUserId(request.getInterestProductId(), tokenInfo.getUserId());
+	public void deleteInterestProduct(
+		DeleteInterestProductDto.Request request, String email) {
+		User user = userService.getUser(email);
+		interestProductRepository.deleteByIdAndUserId(
+			request.getInterestProductId(), user.getId());
 	}
 
 	//주기적으로 관심정도가 높은 인기 상품 목록을 redis set 형태로 따로 저장해놓음.

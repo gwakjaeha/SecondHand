@@ -4,7 +4,7 @@ POST http://localhost:8080/auth/register
 Content-Type: application/json
 
 {
-  "areaId": 200,
+  "areaId": 1,
   "email": "kjh19920718@gmail.com",
   "password": "123456",
   "userName": "재하",
@@ -27,7 +27,7 @@ Content-Type: application/json
 ### read user info
 GET http://localhost:8080/auth/
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjczMzUzMzg2fQ.Nx_sAXeKApF47-emC00xTrvTNVBfKUfNOvFTNll0U1GKHas44LV3aNdCa7LUVLnWHMFK4RHYnIQIp84i7AT8HQ
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJramgxOTkyMDcxOEBnbWFpbC5jb20iLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNjc4MDAyMTYxfQ.ImI5JqS5fgCL85yqpOdHHMDhPKazq05fE1D5e51RWE2f0fiJ3qcq4sdtOF-zCDEcPd7Kg7ZVSq2almJLtZU2rA
 
 ### change user info
 PATCH http://localhost:8080/auth/

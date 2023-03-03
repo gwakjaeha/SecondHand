@@ -4,7 +4,7 @@ import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
 import com.example.secondhand.domain.catetory.entity.Category;
 import com.example.secondhand.domain.catetory.repository.CategoryRepository;
-import com.example.secondhand.domain.product.dto.AddProductDto;
+import com.example.secondhand.domain.product.dto.AddProductDto.Request;
 import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
 import com.example.secondhand.domain.area.entity.Area;
 import com.example.secondhand.domain.product.entity.Product;
@@ -15,7 +15,7 @@ import com.example.secondhand.domain.product.entity.ProductDocument;
 import com.example.secondhand.domain.area.repository.AreaRepository;
 import com.example.secondhand.domain.product.repository.ProductRepository;
 import com.example.secondhand.domain.product.repository.ProductSearchRepository;
-import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
+import com.example.secondhand.domain.user.domain.User;
 import com.example.secondhand.domain.user.service.UserService;
 import com.example.secondhand.global.config.redis.RedisDao;
 import com.example.secondhand.global.exception.CustomException;
@@ -95,19 +95,18 @@ public class ProductService {
 	}
 
 	@Transactional
-	public void addProduct(AddProductDto.Request request, MultipartFile imgFile) {
-		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
-		String imgFilePath = getSavedImageFilePath(imgFile);
+	public void addProduct(Request request, MultipartFile imgFile, String email) {
 
-		Area area = areaRepository.findById(tokenInfo.getAreaId())
-			.orElseThrow(() -> new CustomException(NOT_FOUND_AREA));
+		User user = userService.getUser(email);
+
+		String imgFilePath = getSavedImageFilePath(imgFile);
 
 		Category category = categoryRepository.findById(request.getCategoryId())
 			.orElseThrow(() -> new CustomException(NOT_FOUND_CATEGORY));
 
 		Product product = Product.builder()
-			.id(tokenInfo.getUserId())
-			.area(area)
+			.id(user.getId())
+			.area(user.getArea())
 			.category(category)
 			.title(request.getTitle())
 			.content(request.getContent())
@@ -124,9 +123,16 @@ public class ProductService {
 	}
 
 	@Transactional
-	public void updateProduct(UpdateProductDto.Request request, MultipartFile imgFile) {
+	public void updateProduct(
+		UpdateProductDto.Request request, MultipartFile imgFile, String email) {
 		Product product = productRepository.findById(request.getProductId())
 			.orElseThrow(() -> new CustomException(NOT_EXIST_PRODUCT));
+
+		User user = userService.getUser(email);
+
+		if(product.getUser().getId() != user.getId()){
+			throw new CustomException(USER_NOT_MATCH);
+		}
 
 		String imgFilePath = getSavedImageFilePath(imgFile);
 		productRepository.save(
@@ -146,18 +152,25 @@ public class ProductService {
 	}
 
 	@Transactional
-	public void deleteProduct(DeleteProductDto.Request request) {
+	public void deleteProduct(DeleteProductDto.Request request, String email) {
 		Product product = productRepository.findById(request.getProductId()).get();
-		product.setDeleteAt(LocalDateTime.now());
+
+		User user = userService.getUser(email);
+
+		if(product.getUser().getId() != user.getId()){
+			throw new CustomException(USER_NOT_MATCH);
+		}
+
+		product.setDeletedAt(LocalDateTime.now());
 		productRepository.save(product);
 	}
 
 	@Transactional
 	public Page<Product> readMySellingProductList(
-		ReadMySellingProductListDto.Request request) {
+		ReadMySellingProductListDto.Request request, String email) {
 		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
-		TokenInfoResponseDto tokenInfo = userService.getTokenInfo();
-		return productRepository.findByUserIdAndDeleteAtIsNull(tokenInfo.getUserId(), pageable);
+		User user = userService.getUser(email);
+		return productRepository.findByUserIdAndDeletedAtIsNull(user.getId(), pageable);
 	}
 
 

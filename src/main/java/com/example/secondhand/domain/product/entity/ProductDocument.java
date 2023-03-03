@@ -55,7 +55,7 @@ public class ProductDocument{
 			.transactionPlace(product.getTransactionPlace())
 			.transactionStatus(product.isTransactionStatus())
 			.createdAt(product.getCreatedAt())
-			.deletedAt(product.getDeleteAt())
+			.deletedAt(product.getDeletedAt())
 			.build();
 	}
 }
