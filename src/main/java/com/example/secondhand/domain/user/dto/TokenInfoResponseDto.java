@@ -39,7 +39,7 @@ public class TokenInfoResponseDto {
             .admin(user.isAdmin())
             .createAt(user.getCreatedAt())
             .updateAt(user.getUpdatedAt())
-            .deleteAt(user.getDeleteAt())
+            .deleteAt(user.getDeletedAt())
             .build();
     }
 }

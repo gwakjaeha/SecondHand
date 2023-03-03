@@ -12,8 +12,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.secondhand.domain.user.dto.ChangeUserDto;
 import com.example.secondhand.domain.user.dto.ChangePasswordDto;
+import com.example.secondhand.domain.user.dto.ChangeUserDto;
 import com.example.secondhand.domain.user.dto.CreateUserDto;
 import com.example.secondhand.domain.user.dto.DeleteUserDto;
 import com.example.secondhand.domain.user.dto.LoginUserDto;
@@ -104,7 +104,7 @@ class UserControllerTest {
 	@WithMockUser
 	void testReadAccountInfo() throws Exception{
 		//given
-		given(userService.readAccountInfo())
+		given(userService.readAccountInfo(anyString()))
 			.willReturn(ReadUserDto.builder()
 				.areaId(300L)
 				.email("example@email.com")
@@ -118,7 +118,7 @@ class UserControllerTest {
 				.with(SecurityMockMvcRequestPostProcessors.csrf()))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value(200))
-				.andExpect(jsonPath("$.message.status").value("READ_INFO_TRUE"))
+				.andExpect(jsonPath("$.message.status").value("READ_ACCOUNT_INFO_TRUE"))
 				.andExpect(jsonPath("$.data.areaId").value(300))
 				.andExpect(jsonPath("$.data.email").value("example@email.com"))
 				.andExpect(jsonPath("$.data.userName").value("name"))
@@ -130,7 +130,7 @@ class UserControllerTest {
 	void testChangeAccountInfo() throws Exception{
 		//given
 		willDoNothing()
-			.given(userService).changeAccountInfo(any());
+			.given(userService).changeAccountInfo(any(), anyString());
 		//when
 		//then
 		mockMvc.perform(patch("/auth/")
@@ -140,7 +140,7 @@ class UserControllerTest {
 				objectMapper.writeValueAsString(new ChangeUserDto.Request(300L, "name", "010-1111-2222"))))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.status").value(200))
-			.andExpect(jsonPath("$.message.status").value("CHANGE_INFO_TRUE"));
+			.andExpect(jsonPath("$.message.status").value("CHANGE_ACCOUNT_INFO_TRUE"));
 	}
 
 	@Test
@@ -166,7 +166,7 @@ class UserControllerTest {
 	void testChangePassword() throws Exception{
 		//given
 		willDoNothing()
-			.given(userService).changePassword(any());
+			.given(userService).changePassword(any(), anyString());
 		//when
 		//then
 		mockMvc.perform(patch("/auth/password")
@@ -202,7 +202,7 @@ class UserControllerTest {
 	void testDeleteAccount() throws Exception{
 		//given
 		willDoNothing()
-			.given(userService).deleteAccount(any());
+			.given(userService).deleteAccount(any(), anyString());
 		//when
 		//then
 		mockMvc.perform(delete("/auth/")

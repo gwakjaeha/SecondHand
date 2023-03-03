@@ -16,7 +16,6 @@ import com.example.secondhand.domain.area.repository.AreaRepository;
 import com.example.secondhand.domain.product.repository.ProductRepository;
 import com.example.secondhand.domain.product.repository.ProductSearchRepository;
 import com.example.secondhand.domain.user.domain.User;
-import com.example.secondhand.domain.user.dto.TokenInfoResponseDto;
 import com.example.secondhand.domain.user.service.UserService;
 import com.example.secondhand.global.config.redis.RedisDao;
 import com.example.secondhand.global.exception.CustomException;
@@ -162,7 +161,7 @@ public class ProductService {
 			throw new CustomException(USER_NOT_MATCH);
 		}
 
-		product.setDeleteAt(LocalDateTime.now());
+		product.setDeletedAt(LocalDateTime.now());
 		productRepository.save(product);
 	}
 
@@ -171,7 +170,7 @@ public class ProductService {
 		ReadMySellingProductListDto.Request request, String email) {
 		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
 		User user = userService.getUser(email);
-		return productRepository.findByUserIdAndDeleteAtIsNull(user.getId(), pageable);
+		return productRepository.findByUserIdAndDeletedAtIsNull(user.getId(), pageable);
 	}
 
 

@@ -294,28 +294,8 @@ class UserServiceTest {
 	@Test
 	void testReadAccountInfo() throws Exception{
 		//given
-		SecurityContextHolder.getContext()
-			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
-
-		given(userRepository.findOneByEmail(anyString()))
-			.willReturn(Optional.of(
-				User.builder()
-					.id(3L)
-					.area(Area.builder().id(3L).build())
-					.email("example@email.com")
-					.password("password")
-					.userName("name")
-					.phone("010-1111-2222")
-					.status("ING")
-					.emailAuthKey("auth-key")
-					.admin(false)
-					.createdAt(LocalDateTime.now().minusDays(2))
-					.updatedAt(LocalDateTime.now())
-					.deleteDt(null)
-					.build()));
-
-		given(userRepository.findById(any()))
-			.willReturn(Optional.of(User.builder()
+		given(userRepository.findByEmail(anyString()))
+			.willReturn(Optional.ofNullable(User.builder()
 				.area(Area.builder().id(300L).build())
 				.email("example@email.com")
 				.userName("name")
@@ -323,7 +303,7 @@ class UserServiceTest {
 				.build()));
 
 		//when
-		ReadUserDto readUserDto = userService.readAccountInfo();
+		ReadUserDto readUserDto = userService.readAccountInfo("example@email.com");
 		//then
 		assertEquals(300, readUserDto.getAreaId());
 		assertEquals("example@email.com", readUserDto.getEmail());
@@ -335,44 +315,27 @@ class UserServiceTest {
 	@WithMockUser
 	void testChangeAccountInfo() throws Exception{
 		//given
-		SecurityContextHolder.getContext()
-			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
-
-		given(userRepository.findOneByEmail(anyString()))
-			.willReturn(Optional.of(
-				User.builder()
-					.id(3L)
-					.area(Area.builder().id(10L).build())
-					.email("example@email.com")
-					.password("password")
-					.userName("name")
-					.phone("010-1111-2222")
-					.status("ING")
-					.emailAuthKey("auth-key")
-					.admin(false)
-					.createdAt(LocalDateTime.now().minusDays(2))
-					.updatedAt(LocalDateTime.now())
-					.deleteDt(null)
-					.build()));
-
-		given(areaRepository.findById(anyLong()))
-			.willReturn(Optional.ofNullable(Area.builder().id(300L).build()));
+		given(userRepository.findByEmail(anyString()))
+			.willReturn(Optional.ofNullable(User.builder()
+				.id(3L)
+				.email("example@email.com")
+				.build()));
 
 		given(userRepository.save(any()))
 			.willReturn(User.builder()
-					.id(3L)
-					.area(Area.builder().id(10L).build())
-					.email("example@email.com")
-					.password("password")
-					.userName("name")
-					.phone("010-1111-2222")
-					.status("ING")
-					.emailAuthKey("auth-key")
-					.admin(false)
-					.createdAt(LocalDateTime.now().minusDays(2))
-					.updatedAt(LocalDateTime.now())
-					.deleteDt(null)
-					.build());
+				.id(3L)
+				.area(Area.builder().id(10L).build())
+				.email("example@email.com")
+				.password("password")
+				.userName("name")
+				.phone("010-1111-2222")
+				.status("ING")
+				.emailAuthKey("auth-key")
+				.admin(false)
+				.createdAt(LocalDateTime.now().minusDays(2))
+				.updatedAt(LocalDateTime.now())
+				.deletedAt(null)
+				.build());
 
 		ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
@@ -382,46 +345,26 @@ class UserServiceTest {
 										.areaId(200L)
 										.userName("name")
 										.phone("010-1111-2222")
-										.build());
+										.build(), "example@email.com");
 
 		//then
 		verify(userRepository, times(1)).save(captor.capture());
 		assertEquals(3L, captor.getValue().getId());
+		assertEquals("010-1111-2222", captor.getValue().getPhone());
 	}
 
 	@Test
 	void testChangePassword() throws Exception{
 		//given
-		SecurityContextHolder.getContext()
-			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
-
-		given(userRepository.findOneByEmail(anyString()))
-			.willReturn(Optional.of(
-				User.builder()
-					.id(3L)
-					.area(Area.builder().id(10L).build())
-					.email("example@email.com")
-					.password("password")
-					.userName("name")
-					.phone("010-1111-2222")
-					.status("ING")
-					.emailAuthKey("auth-key")
-					.admin(false)
-					.createdAt(LocalDateTime.now().minusDays(2))
-					.updatedAt(LocalDateTime.now())
-					.deleteDt(null)
-					.build()));
-
 		given(userRepository.findByEmail(anyString()))
-			.willReturn(Optional.of(User.builder().build()));
+			.willReturn(Optional.ofNullable(User.builder()
+				.email("example@email.com")
+				.build()));
 
-		given(passwordEncoder.matches(anyString(), anyString()))
+		given(passwordEncoder.matches(any(), any()))
 			.willReturn(true);
 
 		given(passwordEncoder.encode(anyString())).willReturn("changed-password");
-
-		given(areaRepository.findById(anyLong()))
-			.willReturn(Optional.ofNullable(Area.builder().id(300L).build()));
 
 		given(userRepository.save(any()))
 			.willReturn(User.builder()
@@ -435,7 +378,7 @@ class UserServiceTest {
 										.email("example@email.com")
 										.password("password")
 										.newPassword("changed-password")
-										.build());
+										.build(), "example@email.com");
 
 		//then
 		verify(userRepository, times(1)).save(captor.capture());
@@ -459,7 +402,7 @@ class UserServiceTest {
 					.admin(false)
 					.createdAt(LocalDateTime.now().minusDays(2))
 					.updatedAt(LocalDateTime.now())
-					.deleteDt(null)
+					.deletedAt(null)
 					.build()));
 
 		given(userRepository.findByEmail(anyString()))
@@ -489,35 +432,17 @@ class UserServiceTest {
 	@Test
 	void testDeleteAccount() throws Exception{
 		//given
-		SecurityContextHolder.getContext()
-			.setAuthentication(new UsernamePasswordAuthenticationToken("username", "password", Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))));
+		given(userRepository.findByEmail(anyString()))
+			.willReturn(Optional.ofNullable(User.builder()
+				.email("example@email.com")
+				.build()));
 
-		given(userRepository.findOneByEmail(anyString()))
-			.willReturn(Optional.of(
-				User.builder()
-					.id(3L)
-					.area(Area.builder().id(10L).build())
-					.email("example@email.com")
-					.password("password")
-					.userName("name")
-					.phone("010-1111-2222")
-					.status("ING")
-					.emailAuthKey("auth-key")
-					.admin(false)
-					.createdAt(LocalDateTime.now().minusDays(2))
-					.updatedAt(LocalDateTime.now())
-					.deleteDt(null)
-					.build()));
-
-		given(passwordEncoder.matches(anyString(), anyString()))
+		given(passwordEncoder.matches(any(), any()))
 			.willReturn(true);
-
-		given(areaRepository.findById(anyLong()))
-			.willReturn(Optional.ofNullable(Area.builder().id(300L).build()));
 
 		given(userRepository.save(any()))
 			.willReturn(User.builder()
-				.deleteDt(LocalDateTime.now())
+				.deletedAt(LocalDateTime.now())
 				.build());
 
 		ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
@@ -525,11 +450,11 @@ class UserServiceTest {
 		//when
 		userService.deleteAccount(DeleteUserDto.Request.builder()
 													.password("password")
-													.build());
+													.build(), "example@email.com");
 
 		//then
 		verify(userRepository, times(1)).save(captor.capture());
-		assertNotNull(captor.getValue().getDeleteAt());
+		assertNotNull(captor.getValue().getDeletedAt());
 	}
 
 	@Test

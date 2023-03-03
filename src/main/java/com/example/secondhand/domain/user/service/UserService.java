@@ -182,7 +182,7 @@ public class UserService {
 				.admin(user.isAdmin())
 				.createdAt(user.getCreatedAt())
 				.updatedAt(user.getUpdatedAt())
-				.deleteAt(LocalDateTime.now())
+				.deletedAt(LocalDateTime.now())
 				.build()
 		);
 	}
@@ -272,8 +272,6 @@ public class UserService {
 	}
 
 	private void changePasswordValidation(ChangePasswordDto.Request request, String password) {
-		userRepository.findByEmail(request.getEmail())
-			.orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 		if (!passwordEncoder.matches(request.getPassword(), password)) {
 			throw new CustomException(PASSWORD_CHANGE_FALSE);
 		}
