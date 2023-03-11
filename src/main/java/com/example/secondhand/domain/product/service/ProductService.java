@@ -1,18 +1,28 @@
 package com.example.secondhand.domain.product.service;
 
-import static com.example.secondhand.global.exception.CustomErrorCode.*;
+import static com.example.secondhand.global.constant.GlobalConstant.BASE_LOCAL_PATH;
+import static com.example.secondhand.global.constant.GlobalConstant.BASE_URL_PATH;
+import static com.example.secondhand.global.constant.GlobalConstant.INTEREST_DEGREE_PREFIX;
+import static com.example.secondhand.global.constant.GlobalConstant.PAGE_SIZE;
+import static com.example.secondhand.global.constant.GlobalConstant.POPULAR_PRODUCT_CRITERION;
+import static com.example.secondhand.global.constant.GlobalConstant.POPULAR_PRODUCT_LIST_PREFIX;
+import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_CATEGORY;
+import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_PRODUCT;
+import static com.example.secondhand.global.exception.CustomErrorCode.NOT_FOUND_CATEGORY;
+import static com.example.secondhand.global.exception.CustomErrorCode.SAVE_IMAGE_FILE_FALSE;
+import static com.example.secondhand.global.exception.CustomErrorCode.USER_NOT_MATCH;
 
+import com.example.secondhand.domain.area.entity.Area;
+import com.example.secondhand.domain.area.repository.AreaRepository;
 import com.example.secondhand.domain.catetory.entity.Category;
 import com.example.secondhand.domain.catetory.repository.CategoryRepository;
-import com.example.secondhand.domain.product.dto.AddProductDto.Request;
-import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
-import com.example.secondhand.domain.area.entity.Area;
-import com.example.secondhand.domain.product.entity.Product;
+import com.example.secondhand.domain.product.dto.AddProductDto;
 import com.example.secondhand.domain.product.dto.DeleteProductDto;
+import com.example.secondhand.domain.product.dto.ReadMySellingProductListDto;
 import com.example.secondhand.domain.product.dto.ReadProductListDto;
 import com.example.secondhand.domain.product.dto.UpdateProductDto;
+import com.example.secondhand.domain.product.entity.Product;
 import com.example.secondhand.domain.product.entity.ProductDocument;
-import com.example.secondhand.domain.area.repository.AreaRepository;
 import com.example.secondhand.domain.product.repository.ProductRepository;
 import com.example.secondhand.domain.product.repository.ProductSearchRepository;
 import com.example.secondhand.domain.user.domain.User;
@@ -30,7 +40,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,18 +58,6 @@ public class ProductService {
 	private final CategoryRepository categoryRepository;
 	private final UserService userService;
 	private final RedisDao redisDao;
-	@Value("${baseLocalPath}")
-	private String baseLocalPath;
-	@Value("${baseUrlPath}")
-	private String baseUrlPath;
-	@Value("${pageSize}")
-	private int pageSize;
-	@Value("${interestDegreePrefix}")
-	private String INTEREST_DEGREE_PREFIX;
-	@Value("${popularProductListPrefix}")
-	private String POPULAR_PRODUCT_LIST_PREFIX;
-	@Value("${popularProductCriterion}")
-	private String POPULAR_PRODUCT_CRITERION;
 
 	//키워드가 입력된 경우, (지역, 카테고리, 키워드)로 검색을 진행하고,
 	//키워드가 입력되지 않은 경우, (지역, 카테고리)로만 검색을 진행함.
@@ -71,7 +68,7 @@ public class ProductService {
 	@Transactional
 	public Page<ProductDocument> readProductList(ReadProductListDto.Request request) {
 
-		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
+		Pageable pageable = PageRequest.of(request.getPage(), PAGE_SIZE);
 		Page<ProductDocument> productDocumentList = null;
 
 		//JPA 에서는 from 절의 서브쿼리를 구현하기 어려운 관계로, 여러 쿼리 단계로 나누어서 내 근처 지역 리스트를 가져옴.
@@ -95,7 +92,7 @@ public class ProductService {
 	}
 
 	@Transactional
-	public void addProduct(Request request, MultipartFile imgFile, String email) {
+	public void addProduct(AddProductDto.Request request, MultipartFile imgFile, String email) {
 
 		User user = userService.getUser(email);
 
@@ -106,6 +103,7 @@ public class ProductService {
 
 		Product product = Product.builder()
 			.id(user.getId())
+			.user(user)
 			.area(user.getArea())
 			.category(category)
 			.title(request.getTitle())
@@ -134,21 +132,20 @@ public class ProductService {
 			throw new CustomException(USER_NOT_MATCH);
 		}
 
+		Category category = categoryRepository.findById(request.getCategoryId())
+			.orElseThrow(() -> new CustomException(NOT_EXIST_CATEGORY));
+
 		String imgFilePath = getSavedImageFilePath(imgFile);
-		productRepository.save(
-			Product.builder()
-				.id(request.getProductId())
-				.user(product.getUser())
-				.area(product.getArea())
-				.category(product.getCategory())
-				.title(request.getTitle())
-				.content(request.getContent())
-				.imagePath(imgFilePath)
-				.price(request.getPrice())
-				.transactionPlace(request.getTransactionPlace())
-				.transactionStatus(request.isTransactionStatus())
-				.createdAt(product.getCreatedAt())
-				.build());
+
+		product.setCategory(category);
+		product.setTitle(request.getTitle());
+		product.setContent(request.getContent());
+		product.setPrice(request.getPrice());
+		product.setTransactionPlace(request.getTransactionPlace());
+		product.setTransactionStatus(request.isTransactionStatus());
+		product.setImagePath(imgFilePath);
+
+		productRepository.save(product);
 	}
 
 	@Transactional
@@ -168,7 +165,7 @@ public class ProductService {
 	@Transactional
 	public Page<Product> readMySellingProductList(
 		ReadMySellingProductListDto.Request request, String email) {
-		Pageable pageable = PageRequest.of(request.getPage(), pageSize);
+		Pageable pageable = PageRequest.of(request.getPage(), PAGE_SIZE);
 		User user = userService.getUser(email);
 		return productRepository.findByUserIdAndDeletedAtIsNull(user.getId(), pageable);
 	}
@@ -181,7 +178,7 @@ public class ProductService {
 		Map<String,String> interestDegreeMap = redisDao.getValuesForHash(INTEREST_DEGREE_PREFIX);
 		redisDao.deleteValues(POPULAR_PRODUCT_LIST_PREFIX);
 		for(String key: interestDegreeMap.keySet()){
-			if(Long.parseLong(interestDegreeMap.get(key)) > Long.parseLong(POPULAR_PRODUCT_CRITERION)){
+			if(Long.parseLong(interestDegreeMap.get(key)) > POPULAR_PRODUCT_CRITERION){
 				redisDao.setValuesForSet(POPULAR_PRODUCT_LIST_PREFIX, key);
 			}
 		}
@@ -195,7 +192,7 @@ public class ProductService {
 		if(imgFile != null) {
 			String originalFilename = imgFile.getOriginalFilename();
 
-			String[] arrFilename = getNewImgFilePath(baseLocalPath, baseUrlPath, originalFilename);
+			String[] arrFilename = getNewImgFilePath(BASE_LOCAL_PATH, BASE_URL_PATH, originalFilename);
 
 			saveFilename = arrFilename[0];
 			urlFilename = arrFilename[1];

@@ -1,5 +1,8 @@
 package com.example.secondhand.domain.user.service;
 
+import static com.example.secondhand.global.constant.GlobalConstant.ACCESS_TOKEN_PREFIX;
+import static com.example.secondhand.global.constant.GlobalConstant.REFRESH_TOKEN_PREFIX;
+import static com.example.secondhand.global.constant.GlobalConstant.SERVICE_URL;
 import static com.example.secondhand.global.status.UserStatusCode.*;
 import static com.example.secondhand.global.exception.CustomErrorCode.*;
 
@@ -43,15 +46,6 @@ public class UserService {
 	private final RedisDao redisDao;
 	private final TokenProvider tokenProvider;
 	private final MailComponents mailComponents;
-
-	@Value("${serviceUrl}")
-	private String SERVICE_URL;
-
-	@Value("${accessTokenPrefix}")
-	private String ACCESS_TOKEN_PREFIX;
-
-	@Value("${refreshTokenPrefix}")
-	private String REFRESH_TOKEN_PREFIX;
 
 	@Transactional
 	public void createAccount(CreateUserDto.Request request) {
@@ -306,14 +300,6 @@ public class UserService {
 		User user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new CustomException(NOT_FOUND_USER));
 		return user;
-	}
-
-	public TokenInfoResponseDto getTokenInfo() {
-		return TokenInfoResponseDto.Response(
-			Objects.requireNonNull(SecurityUtil.getCurrentUsername()
-				.flatMap(userRepository::findOneByEmail)
-				.orElse(null))
-		);
 	}
 
 	private TokenInfoResponseDto getAccountInfo(String email) {
