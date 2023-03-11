@@ -44,6 +44,9 @@ public enum CustomErrorCode {
     UPDATE_PRODUCT_INFO_NULL("필수 항목을 입력하지 않았습니다."),
     DELETE_PRODUCT_INFO_NULL("물품 정보가 확인되지 않습니다."),
 
+    //카테고리
+    NOT_EXIST_CATEGORY("해당하는 카테고리가 없습니다."),
+
     //이미지 파일 저장
     SAVE_IMAGE_FILE_FALSE("이미지 파일 저장에 실패하였습니다."),
 
