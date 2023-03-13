@@ -1,5 +1,11 @@
 package com.example.secondhand.domain.user.service;
 
+import static com.example.secondhand.global.exception.CustomErrorCode.DELETE_ACCOUNT_FALSE;
+import static com.example.secondhand.global.exception.CustomErrorCode.NOT_FOUND_AREA;
+import static com.example.secondhand.global.exception.CustomErrorCode.NOT_FOUND_USER;
+import static com.example.secondhand.global.exception.CustomErrorCode.REFRESH_TOKEN_IS_BAD_REQUEST;
+import static com.example.secondhand.global.exception.CustomErrorCode.STOP_EMAIL;
+import static com.example.secondhand.global.exception.CustomErrorCode.WITHDRAW_EMAIL;
 import static com.example.secondhand.global.status.UserStatusCode.USER_STATUS_ING;
 import static com.example.secondhand.global.status.UserStatusCode.USER_STATUS_REQ;
 import static com.example.secondhand.global.exception.CustomErrorCode.DUPLICATE_ACCOUNT;
@@ -71,8 +77,6 @@ class UserServiceTest {
 	private RedisDao redisDao;
 	@Mock
 	private AuthenticationManager authenticationManager;
-	@Value("${refreshTokenPrefix}")
-	private String REFRESH_TOKEN_PREFIX;
 
 
 	@Test
@@ -211,6 +215,8 @@ class UserServiceTest {
 	@Test
 	void testNotExistEmailInLogin() throws Exception{
 		//given
+		given(userRepository.findByEmail(anyString()))
+			.willReturn(Optional.empty());
 		//when
 		CustomException exception = assertThrows(CustomException.class,
 			() -> userService.loginAccount(LoginUserDto.Request.builder()
@@ -227,6 +233,8 @@ class UserServiceTest {
 			.willReturn(Optional.of(User.builder()
 				.password("password")
 				.build()));
+		given(passwordEncoder.matches(anyString(),anyString()))
+			.willReturn(false);
 		//when
 		CustomException exception = assertThrows(CustomException.class,
 			() -> userService.loginAccount(LoginUserDto.Request.builder()
@@ -237,7 +245,7 @@ class UserServiceTest {
 	}
 
 	@Test
-	void testNotCorrectStatusInLogin() throws Exception{
+	void testNotCorrectStatusReqEmailInLogin() throws Exception{
 		//given
 		given(userRepository.findByEmail(anyString()))
 			.willReturn(Optional.of(User.builder()
@@ -253,6 +261,44 @@ class UserServiceTest {
 				.password("password").build()));
 		//then
 		assertEquals(new CustomException(REQ_EMAIL).getCustomErrorCode(), exception.getCustomErrorCode());
+	}
+
+	@Test
+	void testNotCorrectStatusStopEmailInLogin() throws Exception{
+		//given
+		given(userRepository.findByEmail(anyString()))
+			.willReturn(Optional.of(User.builder()
+				.password("password")
+				.status("STOP")
+				.build()));
+		given(passwordEncoder.matches(anyString(), anyString()))
+			.willReturn(true);
+		//when
+		CustomException exception = assertThrows(CustomException.class,
+			() -> userService.loginAccount(LoginUserDto.Request.builder()
+				.email("example@email.com")
+				.password("password").build()));
+		//then
+		assertEquals(new CustomException(STOP_EMAIL).getCustomErrorCode(), exception.getCustomErrorCode());
+	}
+
+	@Test
+	void testNotCorrectStatusWithdrawEmailInLogin() throws Exception{
+		//given
+		given(userRepository.findByEmail(anyString()))
+			.willReturn(Optional.of(User.builder()
+				.password("password")
+				.status("WITHDRAW")
+				.build()));
+		given(passwordEncoder.matches(anyString(), anyString()))
+			.willReturn(true);
+		//when
+		CustomException exception = assertThrows(CustomException.class,
+			() -> userService.loginAccount(LoginUserDto.Request.builder()
+				.email("example@email.com")
+				.password("password").build()));
+		//then
+		assertEquals(new CustomException(WITHDRAW_EMAIL).getCustomErrorCode(), exception.getCustomErrorCode());
 	}
 
 	@Test
@@ -309,6 +355,19 @@ class UserServiceTest {
 		assertEquals("example@email.com", readUserDto.getEmail());
 		assertEquals("name", readUserDto.getUserName());
 		assertEquals("010-1111-2222", readUserDto.getPhone());
+	}
+
+	@Test
+	void testNotFoundUserInReadAccountInfo() throws Exception{
+		//given
+		given(userRepository.findByEmail(anyString()))
+			.willReturn(Optional.empty());
+
+		//when
+		CustomException exception = assertThrows(CustomException.class,
+			() -> userService.readAccountInfo("example@email.com"));
+		//then
+		assertEquals(NOT_FOUND_USER, exception.getCustomErrorCode());
 	}
 
 	@Test
@@ -430,6 +489,46 @@ class UserServiceTest {
 	}
 
 	@Test
+	void testNotFoundAreaChangeLostPassword() throws Exception{
+		//given
+		given(userRepository.findOneByEmail(anyString()))
+			.willReturn(Optional.of(
+				User.builder()
+					.id(3L)
+					.area(Area.builder().id(10L).build())
+					.email("example@email.com")
+					.password("password")
+					.userName("name")
+					.phone("010-1111-2222")
+					.status("ING")
+					.emailAuthKey("auth-key")
+					.admin(false)
+					.createdAt(LocalDateTime.now().minusDays(2))
+					.updatedAt(LocalDateTime.now())
+					.deletedAt(null)
+					.build()));
+
+		given(userRepository.findByEmail(anyString()))
+			.willReturn(Optional.of(User.builder().build()));
+
+		given(passwordEncoder.matches(anyString(), anyString()))
+			.willReturn(false);
+
+		given(areaRepository.findById(anyLong()))
+			.willReturn(Optional.empty());
+
+		//when
+		CustomException exception = assertThrows(CustomException.class,
+			() -> userService.changeLostPassword(ChangePasswordDto.LostRequest.builder()
+				.email("example@email.com")
+				.newPassword("new-password")
+				.build()));
+
+		//then
+		assertEquals(NOT_FOUND_AREA, exception.getCustomErrorCode());
+	}
+
+	@Test
 	void testDeleteAccount() throws Exception{
 		//given
 		given(userRepository.findByEmail(anyString()))
@@ -458,6 +557,27 @@ class UserServiceTest {
 	}
 
 	@Test
+	void testDeleteAccountFalseInDeleteAccount() throws Exception{
+		//given
+		given(userRepository.findByEmail(anyString()))
+			.willReturn(Optional.ofNullable(User.builder()
+				.email("example@email.com")
+				.build()));
+
+		given(passwordEncoder.matches(any(), any()))
+			.willReturn(false);
+
+		//when
+		CustomException exception = assertThrows(CustomException.class,
+			() -> userService.deleteAccount(DeleteUserDto.Request.builder()
+				.password("password")
+				.build(), "example@email.com"));
+
+		//then
+		assertEquals(DELETE_ACCOUNT_FALSE, exception.getCustomErrorCode());
+	}
+
+	@Test
 	void testReissue() throws Exception{
 		//given
 		given(tokenProvider.getRefreshTokenInfo(anyString()))
@@ -469,7 +589,6 @@ class UserServiceTest {
 		given(tokenProvider.reCreateToken(anyString()))
 			.willReturn("new-access-token");
 
-		ArgumentCaptor<TokenDto.Response> captor = ArgumentCaptor.forClass(TokenDto.Response.class);
 
 		//when
 		TokenDto.Response response = userService.reissue(TokenDto.Request.builder()
@@ -478,7 +597,45 @@ class UserServiceTest {
 
 		//then
 		verify(redisDao, times(1))
-				.getValues(REFRESH_TOKEN_PREFIX + "example@email.com");
+				.getValues(anyString());
 		assertEquals("new-access-token", response.getAccessToken());
+	}
+
+	@Test
+	void testRefreshTokenIsBadRequestRtkInRedisIsNullInReissue() throws Exception{
+		//given
+		given(tokenProvider.getRefreshTokenInfo(anyString()))
+			.willReturn("example@email.com");
+
+		given(redisDao.getValues(anyString()))
+			.willReturn(null);
+
+		//when
+		CustomException exception = assertThrows(CustomException.class,
+			() -> userService.reissue(TokenDto.Request.builder()
+				.refreshToken("refresh-token")
+				.build()));
+
+		//then
+		assertEquals(REFRESH_TOKEN_IS_BAD_REQUEST, exception.getCustomErrorCode());
+	}
+
+	@Test
+	void testRefreshTokenIsBadRequestRtkInRedisNotEqualToRequestRefreshTokenInReissue() throws Exception{
+		//given
+		given(tokenProvider.getRefreshTokenInfo(anyString()))
+			.willReturn("example@email.com");
+
+		given(redisDao.getValues(anyString()))
+			.willReturn("refresh-token2");
+
+		//when
+		CustomException exception = assertThrows(CustomException.class,
+			() -> userService.reissue(TokenDto.Request.builder()
+				.refreshToken("refresh-token")
+				.build()));
+
+		//then
+		assertEquals(REFRESH_TOKEN_IS_BAD_REQUEST, exception.getCustomErrorCode());
 	}
 }
