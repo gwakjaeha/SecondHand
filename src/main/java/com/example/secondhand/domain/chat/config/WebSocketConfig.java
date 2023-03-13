@@ -1,6 +1,6 @@
 package com.example.secondhand.domain.chat.config;
 
-import com.example.secondhand.domain.chat.ChatHandler;
+import com.example.secondhand.domain.chat.handler.ChatHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -11,6 +11,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @RequiredArgsConstructor
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
+
 	private final ChatHandler chatHandler;
 
 	@Override

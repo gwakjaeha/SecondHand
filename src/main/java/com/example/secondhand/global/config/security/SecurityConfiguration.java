@@ -1,4 +1,4 @@
-package com.example.secondhand.global.config.jpa.security;
+package com.example.secondhand.global.config.security;
 
 import com.example.secondhand.global.config.jwt.JwtAccessDeniedHandler;
 import com.example.secondhand.global.config.jwt.JwtAuthenticationEntryPoint;
@@ -15,7 +15,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -66,11 +68,17 @@ public class SecurityConfiguration{
             .authorizeRequests()
             .antMatchers("/auth", "/auth/register", "/auth/login", "/auth/auth-email", "/auth/password").permitAll()
             .antMatchers("/v2/api-docs", "/swagger-ui/**", "/swagger-resources", "/swagger-resources/**", "/swagger-ui.html").permitAll()
+            .antMatchers("/guest","/master","/loose","/ws/chat").permitAll()
             .anyRequest().authenticated()
 
             .and()
             .apply(new JwtSecurityConfig(tokenProvider,redisDao));
 
         return http.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().antMatchers("/favicon.ico", "/css/**", "/js/**");
     }
 }
