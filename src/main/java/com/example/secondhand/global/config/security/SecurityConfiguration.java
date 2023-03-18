@@ -68,7 +68,7 @@ public class SecurityConfiguration{
             .authorizeRequests()
             .antMatchers("/auth", "/auth/register", "/auth/login", "/auth/auth-email", "/auth/password").permitAll()
             .antMatchers("/v2/api-docs", "/swagger-ui/**", "/swagger-resources", "/swagger-resources/**", "/swagger-ui.html").permitAll()
-            .antMatchers("/guest","/master","/loose","/ws/chat").permitAll()
+            .antMatchers("/chat/room", "/stomp/chat/**", "/favicon.ico").permitAll()
             .anyRequest().authenticated()
 
             .and()
