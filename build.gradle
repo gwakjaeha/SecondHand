@@ -34,12 +34,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
     implementation 'io.springfox:springfox-swagger-ui:3.0.0'
+    implementation 'io.netty:netty-resolver-dns-native-macos:4.1.68.Final:osx-aarch_64'
     testImplementation 'junit:junit:4.13.1'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+    implementation 'org.springframework.boot:spring-boot-starter-reactor-netty:2.6.4'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
+    implementation 'org.webjars:sockjs-client:1.5.1'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp:2.6.4'
 }
 
 tasks.named('test') {
