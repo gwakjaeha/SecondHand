@@ -46,6 +46,7 @@ public class CategoryService {
 		categoryRepository.save(category);
 	}
 
+	@Transactional
 	public void deleteCategory(String categoryName) {
 		Category category = categoryRepository.findByCategoryName(categoryName)
 			.orElseThrow(()-> new CustomException(NOT_EXIST_CATEGORY));
