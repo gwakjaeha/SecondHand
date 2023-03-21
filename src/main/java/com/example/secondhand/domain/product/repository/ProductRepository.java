@@ -1,5 +1,6 @@
 package com.example.secondhand.domain.product.repository;
 
+import com.example.secondhand.domain.catetory.entity.Category;
 import com.example.secondhand.domain.product.entity.Product;
 import java.util.Optional;
 import java.util.Set;
@@ -12,4 +13,6 @@ import org.springframework.stereotype.Repository;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 	Page<Product> findByUserIdAndDeletedAtIsNull(Long userId, Pageable pageable);
 	Page<Product> findByIdIsIn(Set<Long> set, Pageable pageable);
+
+	Boolean existsByCategory(Category category);
 }
