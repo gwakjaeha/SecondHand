@@ -46,6 +46,7 @@ public enum CustomErrorCode {
 
     //카테고리
     NOT_EXIST_CATEGORY("해당하는 카테고리가 없습니다."),
+    EXIST_PRODUCT_IN_CATEGORY("해당 카테고리에 속하는 물품이 존재합니다."),
 
     //이미지 파일 저장
     SAVE_IMAGE_FILE_FALSE("이미지 파일 저장에 실패하였습니다."),

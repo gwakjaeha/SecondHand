@@ -1,12 +1,13 @@
 package com.example.secondhand.domain.catetory.service;
 
+import static com.example.secondhand.global.exception.CustomErrorCode.EXIST_PRODUCT_IN_CATEGORY;
 import static com.example.secondhand.global.exception.CustomErrorCode.NOT_EXIST_CATEGORY;
 
 import com.example.secondhand.domain.catetory.dto.AddCategoryDto;
-import com.example.secondhand.domain.catetory.dto.DeleteCategoryDto;
 import com.example.secondhand.domain.catetory.dto.UpdateCategoryDto.Request;
 import com.example.secondhand.domain.catetory.entity.Category;
 import com.example.secondhand.domain.catetory.repository.CategoryRepository;
+import com.example.secondhand.domain.product.repository.ProductRepository;
 import com.example.secondhand.global.exception.CustomException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryService {
 
 	private final CategoryRepository categoryRepository;
+	private final ProductRepository productRepository;
 
 	@Transactional
 	public List<String> readCategoryList() {
@@ -44,9 +46,15 @@ public class CategoryService {
 		categoryRepository.save(category);
 	}
 
-	public void deleteCategory(DeleteCategoryDto.Request request) {
-		Category category = categoryRepository.findByCategoryName(request.getCategoryName())
+	public void deleteCategory(String categoryName) {
+		Category category = categoryRepository.findByCategoryName(categoryName)
 			.orElseThrow(()-> new CustomException(NOT_EXIST_CATEGORY));
+
+		boolean checkExistProduct = productRepository.existsByCategory(category);
+
+		if(checkExistProduct){
+			throw new CustomException(EXIST_PRODUCT_IN_CATEGORY);
+		}
 
 		categoryRepository.deleteByCategoryName(category.getCategoryName());
 	}

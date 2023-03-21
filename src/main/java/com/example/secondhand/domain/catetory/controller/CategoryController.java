@@ -6,7 +6,6 @@ import static com.example.secondhand.global.status.StatusTrue.READ_CATEGORY_LIST
 import static com.example.secondhand.global.status.StatusTrue.UPDATE_CATEGORY_INFO_TRUE;
 
 import com.example.secondhand.domain.catetory.dto.AddCategoryDto;
-import com.example.secondhand.domain.catetory.dto.DeleteCategoryDto;
 import com.example.secondhand.domain.catetory.dto.UpdateCategoryDto;
 import com.example.secondhand.domain.catetory.service.CategoryService;
 import com.example.secondhand.global.dto.ApiResponse;
@@ -16,6 +15,7 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,10 +53,10 @@ public class CategoryController {
 	}
 
 	@ApiOperation(value = "카테고리를 삭제합니다.")
-	@DeleteMapping("/category")
+	@DeleteMapping("/category/{categoryName}")
 	public ApiResponse<String> deleteCategory(
-		@Valid @RequestBody DeleteCategoryDto.Request request){
-		categoryService.deleteCategory(request);
+		@PathVariable("categoryName") String categoryName){
+		categoryService.deleteCategory(categoryName);
 		return ApiResponse.success(DELETE_CATEGORY_INFO_TRUE);
 	}
 }
